@@ -1,0 +1,47 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+}
+
+group = 'com.hirises'
+version = '0.0.1'
+
+sourceCompatibility = '17.0.1'
+targetCompatibility = '17.0.1'
+
+compileJava.options.encoding 'UTF-8'    //혹시 모를 컴파일 오류 방지 목적
+
+jar{
+    archivesBaseName = "Civilization"
+    archiveVersion = ''
+    destinationDir = file("$projectDir/jar")    //빌드되서 나오는 위치 설정
+}
+
+repositories {
+    mavenCentral()
+    maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])    //libs 폴더 내부 참조
+    compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
+}
+
+processResources { //@version@ 토큰을 현재 버전으로 replace하는 용도
+    filesMatching("**/*.yml") {
+        filter ReplaceTokens, tokens: [version: version]
+    }
+}
+
+sourceSets {    //@version@ 토큰을 replace할 대상
+    main {
+        java {
+            srcDirs= ["src/main/java"]
+        }
+        resources {
+            srcDirs= ["src/main/resources", "src/main/java"]
+            includes= ["**/*.xml", "*.yml"]
+        }
+    }
+}

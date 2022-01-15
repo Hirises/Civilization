@@ -1,0 +1,4 @@
+name: Civilization
+version: @version@
+main: com.hirises.civilization.Civilization
+api-version: 1.18
