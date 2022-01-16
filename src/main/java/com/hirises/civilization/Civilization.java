@@ -19,9 +19,15 @@ public final class Civilization extends JavaPlugin implements Listener {
         plugin = this;
 
         getCommand("menu").setExecutor(new UserCommand());
+        getCommand("money").setExecutor(new UserCommand());
 
         Bukkit.getPluginManager().registerEvents(plugin, plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), plugin);
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            ConfigManager.cacheStore.saveAll();
+            ConfigManager.cacheStore.checkExistAll();
+        }, 5 * 60 * 20, 5 * 60 * 20);
     }
 
     @EventHandler

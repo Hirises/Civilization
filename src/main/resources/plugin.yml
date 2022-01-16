@@ -9,3 +9,4 @@ loadbefore:
   - Core1.18
 commands:
   menu:
+  money:

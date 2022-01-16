@@ -30,5 +30,11 @@ public class MainGUI extends GUI {
         wanted.bindOnStateChange((gui, pre, next) -> {
 
         });
+
+        GUIStateButton shop = new GUIStateButton("자유시장", "s");
+        bind("s", shop);
+        shop.bindOnStateChange((gui, pre, next) -> {
+
+        });
     }
 }
