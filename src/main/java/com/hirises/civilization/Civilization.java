@@ -38,6 +38,7 @@ public final class Civilization extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        ConfigManager.saveShopItem();
     }
 
     public static Civilization getInst() {

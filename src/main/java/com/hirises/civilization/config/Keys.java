@@ -1,7 +1,8 @@
 package com.hirises.civilization.config;
 
 public enum Keys{
-    MoneyItem("Civilization_MoneyItem")
+    MoneyItem("Civilization_MoneyItem"),
+    FreeShopItemIndex("Civilization_FreeShopItemIndex"),
     ;
 
     private String key;

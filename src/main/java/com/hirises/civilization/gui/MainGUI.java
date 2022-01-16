@@ -34,7 +34,7 @@ public class MainGUI extends GUI {
         GUIStateButton shop = new GUIStateButton("자유시장", "s");
         bind("s", shop);
         shop.bindOnStateChange((gui, pre, next) -> {
-
+            new FreeShopViewGUI().open(player, gui);
         });
     }
 }
