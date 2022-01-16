@@ -53,7 +53,7 @@ public class PlayerListener implements Listener {
             ItemStack item = player.getInventory().getItemInMainHand();
             if(ItemUtil.isExist(item) && NBTTagStore.containKey(item, Keys.MoneyItem.toString())){
                 ConfigManager.getCache(player.getUniqueId()).operateMoney(NBTTagStore.get(item, Keys.MoneyItem.toString(), Long.class));
-                player.getInventory().setItemInMainHand(null);
+                player.getInventory().setItemInMainHand(ItemUtil.operateAmount(item, -1));
             }
         }
     }
@@ -70,6 +70,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent event){
         Player player = event.getPlayer();
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
         World world = player.getWorld();
         Location location = player.getLocation();
         ItemStack[] content = player.getInventory().getContents();
@@ -90,5 +91,17 @@ public class PlayerListener implements Listener {
             }
         }
         player.getInventory().setContents(content);
+
+        Player killer = player.getKiller();
+        PlayerCache killerCache = ConfigManager.getCache(killer.getUniqueId());
+        if(killer == null || killer.equals(player)){
+            return;
+        }
+        long killRewardModifier = cache.getKillRewardModifier();
+        cache.operateMoney(ConfigManager.config.get(Long.class, "데스골드") - killRewardModifier);
+        killerCache.operateMoney(ConfigManager.config.get(Long.class, "킬골드") + killRewardModifier);
+        cache.reduceKill();
+        killerCache.addKill();
+
     }
 }

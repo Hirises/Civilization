@@ -15,6 +15,7 @@ import java.util.UUID;
 
 public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
+    public static int killRange;
     public static YamlStore cache = new YamlStore(Civilization.getInst(), "cache.yml");
 
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
@@ -26,6 +27,7 @@ public class ConfigManager {
     public static void init(){
         config.load(true);
         cache.load(true);
+        killRange = config.get(Integer.class, "현상금.범위");
 
         menu.load();
 
