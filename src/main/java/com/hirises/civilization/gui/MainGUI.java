@@ -28,7 +28,7 @@ public class MainGUI extends GUI {
         GUIStateButton wanted = new GUIStateButton("현상금", "w");
         bind("w", wanted);
         wanted.bindOnStateChange((gui, pre, next) -> {
-
+            new PrizeViewGUI().open(player, gui);
         });
 
         GUIStateButton shop = new GUIStateButton("자유시장", "s");
