@@ -2,5 +2,10 @@ name: Civilization
 version: @version@
 main: com.hirises.civilization.Civilization
 api-version: 1.18
+load: STARTUP
 depend:
   - Core1.18
+loadbefore:
+  - Core1.18
+commands:
+  menu:

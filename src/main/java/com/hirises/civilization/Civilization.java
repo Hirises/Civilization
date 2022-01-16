@@ -1,8 +1,15 @@
 package com.hirises.civilization;
 
+import com.hirises.civilization.command.UserCommand;
+import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.player.PlayerListener;
+import com.hirises.core.event.CoreInitEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class Civilization extends JavaPlugin {
+public final class Civilization extends JavaPlugin implements Listener {
 
     private static Civilization plugin;
 
@@ -10,6 +17,16 @@ public final class Civilization extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         plugin = this;
+
+        getCommand("menu").setExecutor(new UserCommand());
+
+        Bukkit.getPluginManager().registerEvents(plugin, plugin);
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(), plugin);
+    }
+
+    @EventHandler
+    public void onCoreInit(CoreInitEvent event){
+        ConfigManager.init();
     }
 
     @Override
