@@ -2,11 +2,14 @@ package com.hirises.civilization;
 
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.player.PlayerListener;
 import com.hirises.core.event.CoreInitEvent;
+import com.hirises.core.event.GUIGetEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -41,6 +44,13 @@ public final class Civilization extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        for(Player player : Bukkit.getOnlinePlayers()){
+            GUIGetEvent event = new GUIGetEvent(player.getUniqueId());
+            Bukkit.getPluginManager().callEvent(event);
+            if(event.getTopGUI() != null){
+                event.getTopGUI().closeAll();
+            }
+        }
         ConfigManager.saveShopItem();
         ConfigManager.cacheStore.saveAll();
     }

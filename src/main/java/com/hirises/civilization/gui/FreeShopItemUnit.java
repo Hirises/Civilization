@@ -2,7 +2,6 @@ package com.hirises.civilization.gui;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
-import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.store.YamlStore;
@@ -33,7 +32,7 @@ public class FreeShopItemUnit implements DataUnit {
 
     @Override
     public void load(YamlStore yml, String s) {
-        originItem = yml.getOrDefault(new ItemStackUnit(), s).getItem();
+        originItem = yml.getConfig().getItemStack(s + ".아이템");
         price = yml.get(Long.class, s + ".가격");
         registerUUID = UUID.fromString(yml.get(String.class, s + ".UUID"));
         registerName = yml.get(String.class, s + ".등록자");
@@ -42,14 +41,14 @@ public class FreeShopItemUnit implements DataUnit {
 
     @Override
     public void save(YamlStore yml, String s) {
-        yml.upsert(new ItemStackUnit(originItem), s);
+        yml.getConfig().set(s + ".아이템", originItem);
         yml.set(s + ".가격", price);
         yml.set(s + ".UUID", registerUUID.toString());
         yml.set(s + ".등록자", registerName);
     }
 
     public ItemStack getOriginItem() {
-        return originItem;
+        return originItem.clone();
     }
 
     public ItemStack getShopItem() {

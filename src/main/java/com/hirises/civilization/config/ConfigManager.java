@@ -58,7 +58,8 @@ public class ConfigManager {
         save.removeKey("자유시장");
         int i = 0;
         for(FreeShopItemUnit item : shopItem){
-            save.upsert(item, String.valueOf(i++));
+            save.upsert(item, "자유시장." + i);
+            i++;
         }
     }
 }
