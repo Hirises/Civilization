@@ -9,6 +9,8 @@ import com.hirises.core.inventory.ui.GUIStateButton;
 import com.hirises.core.util.ItemUtil;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+
 public class FreeShopRegisterGUI extends GUI {
     public FreeShopRegisterGUI() {
         super(new Flags<>(GUIFlags.PREVENT_TOP_INVENTORY_MODIFY), ConfigManager.menu.get("자유시장_등록"));
@@ -30,7 +32,7 @@ public class FreeShopRegisterGUI extends GUI {
         register.bindOnStateChange((gui, i, i1) -> {
             ItemStack item = container.getInnerItems().get(0);
             if(ItemUtil.isExist(item)){
-                
+                new FreeShopCostGUI(item).open(player, gui);
             }
         });
     }

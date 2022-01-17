@@ -12,6 +12,7 @@ import com.hirises.core.inventory.ui.GUIPageContainer;
 import com.hirises.core.inventory.ui.GUIStateButton;
 import com.hirises.core.store.NBTTagStore;
 import org.bukkit.Bukkit;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.stream.Collectors;
 
@@ -26,14 +27,20 @@ public class FreeShopMyItemGUI extends GUI {
     protected void createInventory() {
         container = new GUIPageContainer("아이템", new Flags<>(GUIContainer.GUIContainerFlags.PREVENT_MODIFY));
         bind("i", container);
-        container.setAllPageItem(ConfigManager.shopItem.stream().map(value -> value.getViewItem()).collect(Collectors.toList()), container.getInnerSlots().size());
+        container.setAllPageItem(ConfigManager.shopItem.stream()
+                .filter(value -> value.getRegisterUUID().equals(player.getUniqueId()))
+                .map(value -> value.getViewItem())
+                .collect(Collectors.toList()), container.getInnerSlots().size());
         container.bindOnClick((gui, rawSlot, i1, click, action, guiEventResult) -> {
-            int index = NBTTagStore.get(inventory.getItem(rawSlot), Keys.FreeShopItemIndex.toString(), Integer.class);
-            FreeShopItemUnit unit = ConfigManager.shopItem.get(index);
-            player.getInventory().addItem(unit.getOriginItem());
-            ConfigManager.shopItem.remove(index);
-            Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopMyItemGUI.class, false));
-            Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopViewGUI.class, false));
+            ItemStack item = inventory.getItem(rawSlot);
+            if(NBTTagStore.containKey(item, Keys.FreeShopItemIndex.toString())){
+                int index = NBTTagStore.get(item, Keys.FreeShopItemIndex.toString(), Integer.class);
+                FreeShopItemUnit unit = ConfigManager.shopItem.get(index);
+                player.getInventory().addItem(unit.getOriginItem());
+                ConfigManager.shopItem.remove(index);
+                Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopMyItemGUI.class, false));
+                Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopViewGUI.class, false));
+            }
         });
 
         GUIStateButton previous = new GUIStateButton("이전", "p");

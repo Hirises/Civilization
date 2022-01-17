@@ -44,7 +44,7 @@ public class FreeShopItemUnit implements DataUnit {
     public void save(YamlStore yml, String s) {
         yml.upsert(new ItemStackUnit(originItem), s);
         yml.set(s + ".가격", price);
-        yml.set(s + ".UUID", registerUUID);
+        yml.set(s + ".UUID", registerUUID.toString());
         yml.set(s + ".등록자", registerName);
     }
 
@@ -55,7 +55,7 @@ public class FreeShopItemUnit implements DataUnit {
     public ItemStack getShopItem() {
         return ItemUtil.appendLore(
                 NBTTagStore.set(originItem.clone(), Keys.FreeShopItemIndex.toString(), ConfigManager.shopItem.indexOf(this))
-                , Arrays.asList("", ChatColor.YELLOW + "" + price + ChatColor.GRAY + "원", ChatColor.GRAY + registerName));
+                , Arrays.asList("", ChatColor.YELLOW + "" + price + ChatColor.GRAY + "원", ChatColor.DARK_GRAY + registerName));
     }
 
     public ItemStack getViewItem() {

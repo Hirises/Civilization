@@ -37,4 +37,9 @@ public class MainGUI extends GUI {
             new FreeShopViewGUI().open(player, gui);
         });
     }
+
+    @Override
+    protected GUI self() {
+        return this;
+    }
 }

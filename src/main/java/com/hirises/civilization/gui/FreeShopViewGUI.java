@@ -12,6 +12,7 @@ import com.hirises.core.inventory.ui.GUIPageContainer;
 import com.hirises.core.inventory.ui.GUIStateButton;
 import com.hirises.core.store.NBTTagStore;
 import org.bukkit.Bukkit;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.stream.Collectors;
 
@@ -28,15 +29,19 @@ public class FreeShopViewGUI extends GUI {
         bind("i", container);
         container.setAllPageItem(ConfigManager.shopItem.stream().map(value -> value.getShopItem()).collect(Collectors.toList()), container.getInnerSlots().size());
         container.bindOnClick((gui, rawSlot, i1, clickType, inventoryAction, guiEventResult) -> {
-            int index = NBTTagStore.get(inventory.getItem(rawSlot), Keys.FreeShopItemIndex.toString(), Integer.class);
-            FreeShopItemUnit unit = ConfigManager.shopItem.get(index);
-            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-            if(cache.hasMoney(unit.getPrice())){
-                cache.operateMoney(-unit.getPrice());
-                player.getInventory().addItem(unit.getOriginItem());
-                ConfigManager.shopItem.remove(index);
-                Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopMyItemGUI.class, false));
-                Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopViewGUI.class, false));
+            ItemStack item = inventory.getItem(rawSlot);
+            if(NBTTagStore.containKey(item, Keys.FreeShopItemIndex.toString())){
+                int index = NBTTagStore.get(item, Keys.FreeShopItemIndex.toString(), Integer.class);
+                FreeShopItemUnit unit = ConfigManager.shopItem.get(index);
+                PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+                if(cache.hasMoney(unit.getPrice())){
+                    cache.operateMoney(-unit.getPrice());
+                    ConfigManager.getCache(unit.getRegisterUUID()).operateMoney(unit.getPrice());
+                    player.getInventory().addItem(unit.getOriginItem());
+                    ConfigManager.shopItem.remove(index);
+                    Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopMyItemGUI.class, false));
+                    Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopViewGUI.class, false));
+                }
             }
         });
 

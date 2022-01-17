@@ -59,6 +59,11 @@ public class PrizeViewGUI extends GUI {
         });
     }
 
+    @Override
+    protected GUI self() {
+        return this;
+    }
+
     private ItemStack getHeadItem(OfflinePlayer player){
         ItemStack item = getItemBySymbol("h").clone();
         SkullMeta skull = (SkullMeta) item.getItemMeta();
