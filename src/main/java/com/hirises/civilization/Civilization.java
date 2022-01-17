@@ -8,6 +8,7 @@ import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.CoreInitEvent;
 import com.hirises.core.event.GUIGetEvent;
+import com.hirises.core.store.YamlStore;
 import com.hirises.core.task.CancelableTask;
 import com.hirises.core.util.Util;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -44,6 +45,15 @@ public final class Civilization extends JavaPlugin implements Listener {
         plugin = this;
         onProgress = false;
 
+        isStart = (new YamlStore(plugin, "save.yml")).get(Boolean.class, "start");
+        if(isStart()){
+            world = Bukkit.createWorld(new WorldCreator("Civilization"));
+            world_nether = Bukkit.createWorld(new WorldCreator("Civilization_Nether"));
+            world_end = Bukkit.createWorld(new WorldCreator("Civilization_TheEnd"));
+        }
+
+        ConfigManager.init();
+
         getCommand("menu").setExecutor(new UserCommand());
         getCommand("money").setExecutor(new UserCommand());
         getCommand("civilization").setExecutor(new OPCommand());
@@ -52,21 +62,13 @@ public final class Civilization extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), plugin);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            if(!isStart()){
+                return;
+            }
             Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "저장중입니다..."));
             ConfigManager.cacheStore.saveAll();
             ConfigManager.cacheStore.checkExistAll();
         }, 5 * 60 * 20, 5 * 60 * 20);
-    }
-
-    @EventHandler
-    public void onCoreInit(CoreInitEvent event){
-        ConfigManager.init();
-        isStart = ConfigManager.save.get(Boolean.class, "start");
-        if(isStart()){
-            world = Bukkit.createWorld(new WorldCreator("Civilization"));
-            world_nether = Bukkit.createWorld(new WorldCreator("Civilization_Nether"));
-            world_end = Bukkit.createWorld(new WorldCreator("Civilization_TheEnd"));
-        }
     }
 
     public static boolean isStart() {
@@ -81,12 +83,23 @@ public final class Civilization extends JavaPlugin implements Listener {
             onProgress = true;
 
             Bukkit.broadcast(new TextComponent(ChatColor.RED + "게임을 초기화합니다..."));
+            ConfigManager.shopItem.clear();
             ConfigManager.save.removeKey("자유시장");
             ConfigManager.save.save();
             ConfigManager.cacheStore.removeAll();
-            ConfigManager.cacheStore.checkExistAll();
-            ConfigManager.cacheStore.saveAll();
+            ConfigManager.cacheStore.unloadAll();
+            for(String key : ConfigManager.cache.getKeys("")){
+                ConfigManager.cache.removeKey(key);
+            }
+            ConfigManager.cache.save();
+
             if(isStart){
+                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 초기화시킵니다..."));
+                for(Player player : Bukkit.getOnlinePlayers()){
+                    resetPlayer(player);
+                    ScoreBoardHandler.hide(player, ScoreBoardHandler.getOrNew(player));
+                }
+
                 Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
                 World overWorld = Bukkit.getWorld("world");
                 for(Player player : world.getPlayers()){
@@ -101,11 +114,6 @@ public final class Civilization extends JavaPlugin implements Listener {
                     player.teleport(overWorld.getSpawnLocation());
                 }
                 Bukkit.unloadWorld(world_end, false);
-
-                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 초기화시킵니다..."));
-                for(Player player : Bukkit.getOnlinePlayers()){
-                    resetPlayer(player);
-                }
 
                 Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "월드 제거중..."));
                 File file = plugin.getDataFolder();
@@ -160,6 +168,7 @@ public final class Civilization extends JavaPlugin implements Listener {
 
     public static void resetPlayer(Player player){
         ConfigManager.cacheStore.remove(player);
+        ConfigManager.cacheStore.unload(player);
         for(PotionEffectType effect : PotionEffectType.values()){
             player.removePotionEffect(effect);
         }
@@ -232,6 +241,11 @@ public final class Civilization extends JavaPlugin implements Listener {
                                     prepareNewPlayer(player);
                                     getNewSpawnPoint(player, false);
                                 }
+
+                                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
+                                ConfigManager.cacheStore.checkExistAll();
+                                ConfigManager.cacheStore.saveAll();
+
                                 Bukkit.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
                                 cancel();
                                 onProgress = false;
@@ -251,17 +265,20 @@ public final class Civilization extends JavaPlugin implements Listener {
         Location location = world.getWorldBorder().getCenter();
         Location spawn = location.clone().add(new Random().nextInt(spawnRadius * 2) - spawnRadius, 0, new Random().nextInt(spawnRadius * 2)  - spawnRadius);
         spawn.setY(world.getHighestBlockYAt(spawn.getBlockX(), spawn.getBlockZ()));
+        spawn.add(0, 1, 0);
         while (spawn.getBlock().getType().equals(Material.WATER) || spawn.getBlock().getType().equals(Material.LAVA)){
             spawn.add(0, 1, 0);
         }
-        spawn.clone().add(0, -1 ,0).getBlock().setType(Material.BEDROCK);
+        spawn.clone().add(0, -1, 0).getBlock().setType(Material.BEDROCK);
         spawn.setWorld(world);
+        spawn.add(0.5, 0, 0.5);
         if (asynchronous) {
             world.loadChunk(spawn.getChunk());
         }else{
             player.teleport(spawn);
         }
         player.setBedSpawnLocation(spawn, true);
+        ConfigManager.getCache(player.getUniqueId()).setSpawn(spawn);
         return spawn;
     }
 

@@ -4,7 +4,10 @@ import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
+import com.hirises.civilization.gui.PrizeViewGUI;
+import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
+import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Util;
@@ -18,6 +21,8 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Objective;
 
 import java.util.Random;
@@ -27,19 +32,23 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
-        if(Civilization.getInst().isStart()){
+        if(Civilization.isStart()){
             if(player.getWorld() == null || inValidWorld(player)){
-                Civilization.getInst().resetPlayer(player);
+                //새로 입장시
+                Civilization.resetPlayer(player);
                 Civilization.prepareNewPlayer(player);
                 Civilization.getNewSpawnPoint(player, false);
             }else{
+                //그냥 입장시
                 Objective board = ScoreBoardHandler.getOrNew(player);
                 board.setDisplayName("Civilization");
                 ScoreBoardHandler.show(player, board);
                 updateScoreBoard(player);
             }
         }else{
-            if(player.getWorld() == null){
+            //아직 시작 안함
+            if(player.getWorld() == null){  //예전 데이터 남아있으면
+                Civilization.resetPlayer(player);
                 player.teleport(Bukkit.getWorld("world").getSpawnLocation());
             }
         }
@@ -173,6 +182,7 @@ public class PlayerListener implements Listener {
         cache.reduceKill();
         killerCache.addKill();
 
+        Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, PrizeViewGUI.class, false));
     }
 
     @EventHandler
@@ -180,6 +190,24 @@ public class PlayerListener implements Listener {
         if(!Civilization.isStart()){
             return;
         }
-        event.setRespawnLocation(event.getPlayer().getBedSpawnLocation());
+        Player player = event.getPlayer();
+        Location spawn = player.getBedSpawnLocation();
+        if(spawn == null){
+            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            event.setRespawnLocation(cache.getSpawn());
+        }else{
+            event.setRespawnLocation(spawn);
+        }
+
+        Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
+            int invincibleTime = (int) ConfigManager.config.getOrDefault(new TimeUnit(), "리스폰무적").getTick();
+
+            player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, invincibleTime, 0, false, false, true));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, invincibleTime, 0, false, false, true));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, invincibleTime, 2, false, false, true));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, invincibleTime, 2, false, false, true));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, invincibleTime, 2, false, false, true));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, invincibleTime, 9, false, false, true));
+        }, 1);
     }
 }
