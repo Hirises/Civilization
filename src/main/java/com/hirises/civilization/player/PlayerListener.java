@@ -1,17 +1,20 @@
 package com.hirises.civilization.player;
 
+import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -26,13 +29,42 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
+        if(Civilization.getInst().isStart()){
+            if(inValidWorld(player)){
+                Civilization.getInst().resetPlayer(player);
+                Civilization.addNewPlayer(player, false);
+            }
+        }
         Objective board = ScoreBoardHandler.getOrNew(player);
         board.setDisplayName("Civilization");
         ScoreBoardHandler.show(player, board);
         updateScoreBoard(player);
     }
 
-    public static void updateScoreBoard(UUID uuid){
+    public static boolean inValidWorld(Player player){
+        World world = player.getWorld();
+        return !Civilization.world.equals(world) && !Civilization.world_nether.equals(world) && !Civilization.world_end.equals(world);
+    }
+
+    @EventHandler
+    public void onPortal(EntityPortalEvent event){
+        Util.logging(event.getTo());
+        Location location = event.getTo();
+        switch (location.getWorld().getName()){
+            case "world":
+                location.setWorld(Civilization.world);
+                break;
+            case "world_nether":
+                location.setWorld(Civilization.world_nether);
+                break;
+            case "world_end":
+                location.setWorld(Civilization.world_end);
+                break;
+        }
+        event.setTo(location);
+    }
+
+   public static void updateScoreBoard(UUID uuid){
         Player player = Bukkit.getPlayer(uuid);
         if(player != null){
             updateScoreBoard(player);
@@ -93,10 +125,10 @@ public class PlayerListener implements Listener {
         player.getInventory().setContents(content);
 
         Player killer = player.getKiller();
-        PlayerCache killerCache = ConfigManager.getCache(killer.getUniqueId());
         if(killer == null || killer.equals(player)){
             return;
         }
+        PlayerCache killerCache = ConfigManager.getCache(killer.getUniqueId());
         long killRewardModifier = cache.getKillRewardModifier();
         cache.operateMoney(ConfigManager.config.get(Long.class, "데스골드") - killRewardModifier);
         killerCache.operateMoney(ConfigManager.config.get(Long.class, "킬골드") + killRewardModifier);

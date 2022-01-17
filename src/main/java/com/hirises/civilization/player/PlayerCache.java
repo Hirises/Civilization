@@ -32,6 +32,11 @@ public class PlayerCache implements IPlayerCache {
 
     }
 
+    @Override
+    public void onRemove() {
+        ConfigManager.cache.removeKey(uuid.toString());
+    }
+
     public void operateMoney(long amount){
         setMoney(getMoney() + amount);
     }

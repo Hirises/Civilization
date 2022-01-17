@@ -10,3 +10,4 @@ loadbefore:
 commands:
   menu:
   money:
+  civilization:
