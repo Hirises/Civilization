@@ -16,9 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Objective;
 
@@ -30,15 +28,21 @@ public class PlayerListener implements Listener {
     public void onJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
         if(Civilization.getInst().isStart()){
-            if(inValidWorld(player)){
+            if(player.getWorld() == null || inValidWorld(player)){
                 Civilization.getInst().resetPlayer(player);
-                Civilization.addNewPlayer(player, false);
+                Civilization.prepareNewPlayer(player);
+                Civilization.getNewSpawnPoint(player, false);
+            }else{
+                Objective board = ScoreBoardHandler.getOrNew(player);
+                board.setDisplayName("Civilization");
+                ScoreBoardHandler.show(player, board);
+                updateScoreBoard(player);
+            }
+        }else{
+            if(player.getWorld() == null){
+                player.teleport(Bukkit.getWorld("world").getSpawnLocation());
             }
         }
-        Objective board = ScoreBoardHandler.getOrNew(player);
-        board.setDisplayName("Civilization");
-        ScoreBoardHandler.show(player, board);
-        updateScoreBoard(player);
     }
 
     public static boolean inValidWorld(Player player){
@@ -48,7 +52,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPortal(EntityPortalEvent event){
-        Util.logging(event.getTo());
+        if(!Civilization.isStart()){
+            return;
+        }
         Location location = event.getTo();
         switch (location.getWorld().getName()){
             case "world":
@@ -62,6 +68,29 @@ public class PlayerListener implements Listener {
                 break;
         }
         event.setTo(location);
+    }
+
+    @EventHandler
+    public void onPortal(PlayerPortalEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Location location = event.getTo();
+        Util.logging(location);
+        switch (location.getWorld().getName()){
+            case "world":
+                location.setWorld(Civilization.world);
+                break;
+            case "world_nether":
+                location.setWorld(Civilization.world_nether);
+                break;
+            case "world_end":
+                location.setWorld(Civilization.world_end);
+                break;
+        }
+        event.setTo(location);
+        Util.logging(location);
+        event.setCanCreatePortal(true);
     }
 
    public static void updateScoreBoard(UUID uuid){
@@ -80,6 +109,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
         if(event.getAction().isRightClick()){
             Player player = event.getPlayer();
             ItemStack item = player.getInventory().getItemInMainHand();
@@ -92,6 +124,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onShift_F(PlayerSwapHandItemsEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
         Player player = event.getPlayer();
         if(player.isSneaking()){
             event.setCancelled(true);
@@ -101,6 +136,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
         Player player = event.getPlayer();
         PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
         World world = player.getWorld();
@@ -130,10 +168,18 @@ public class PlayerListener implements Listener {
         }
         PlayerCache killerCache = ConfigManager.getCache(killer.getUniqueId());
         long killRewardModifier = cache.getKillRewardModifier();
-        cache.operateMoney(ConfigManager.config.get(Long.class, "데스골드") - killRewardModifier);
+        cache.operateMoney(ConfigManager.config.get(Long.class, "사망골드") - killRewardModifier);
         killerCache.operateMoney(ConfigManager.config.get(Long.class, "킬골드") + killRewardModifier);
         cache.reduceKill();
         killerCache.addKill();
 
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        event.setRespawnLocation(event.getPlayer().getBedSpawnLocation());
     }
 }

@@ -1,5 +1,6 @@
 package com.hirises.civilization.command;
 
+import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
@@ -16,6 +17,9 @@ public class UserCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(!(sender instanceof Player)){
+            return false;
+        }
+        if(!Civilization.isStart()){
             return false;
         }
         Player player = (Player) sender;

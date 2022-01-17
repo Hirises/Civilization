@@ -66,7 +66,10 @@ public class FreeShopMyItemGUI extends GUI {
 
     @Override
     protected void onChange() {
-        container.setAllPageItem(ConfigManager.shopItem.stream().map(value -> value.getViewItem()).collect(Collectors.toList()), container.getInnerSlots().size());
+        container.setAllPageItem(ConfigManager.shopItem.stream()
+                .filter(value -> value.getRegisterUUID().equals(player.getUniqueId()))
+                .map(value -> value.getViewItem())
+                .collect(Collectors.toList()), container.getInnerSlots().size());
     }
 
     @Override

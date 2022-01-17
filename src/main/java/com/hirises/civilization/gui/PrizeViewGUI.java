@@ -33,7 +33,7 @@ public class PrizeViewGUI extends GUI {
         List<OfflinePlayer> players =
                 Arrays.stream(Bukkit.getOfflinePlayers())
                         .distinct()
-                        .sorted(Comparator.comparingLong(value -> ConfigManager.getCache(value.getUniqueId()).getKillRewardModifier()))
+                        .sorted(Comparator.comparingLong(value -> -1 * ConfigManager.getCache(value.getUniqueId()).getKillRewardModifier()))
                         .collect(Collectors.toList());
         for(OfflinePlayer player : players){
             items.add(getHeadItem(player));
