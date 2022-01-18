@@ -108,8 +108,21 @@ public class PlayerListener implements Listener {
                 break;
             }
             case "world_the_end":{
-                event.getPlayer().teleport(Civilization.world_end.getSpawnLocation());
+                Location location = Civilization.world_end.getSpawnLocation();
+                setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
+                setBlocks(location, -2, 0, -2, 5, 5, 5, Material.AIR);
+                event.getPlayer().teleport(location);
                 break;
+            }
+        }
+    }
+
+    private static void setBlocks(Location location, int x, int y, int z, int dx, int dy, int dz, Material material){
+        for(int curX = x; curX < x + dx; curX++){
+            for(int curY = y; curY < y + dy; curY++){
+                for(int curZ = z; curZ < z + dz; curZ++){
+                    location.clone().add(curX, curY, curZ).getBlock().setType(material);
+                }
             }
         }
     }
