@@ -25,8 +25,10 @@ import java.io.IOException;
 
 public class Structure implements DataUnit {
     int minX;
+    int minY;
     int minZ;
     int maxX;
+    int maxY;
     int maxZ;
     String world;
     String type;
@@ -102,6 +104,7 @@ public class Structure implements DataUnit {
         int width = clipboard.getRegion().getWidth();
         int length = clipboard.getRegion().getLength();
         Location location = Civilization.getRandomLocation(width, length,true);
+        Util.logging(width + "//" + length);
         ConfigManager.addStructure(name, location.getWorld(), location, location.clone().add(width - 1, 0, length - 1));
 
         pasteStructure(clipboard, location);
@@ -110,7 +113,6 @@ public class Structure implements DataUnit {
     private static Clipboard getStructure(String name){
         Clipboard clipboard = null;
         File file = new File(Civilization.getInst().getDataFolder().getAbsolutePath() + "/Schematics/" + name + ".schem");
-        Util.logging(file.getAbsolutePath());
         ClipboardFormat format = ClipboardFormats.findByFile(file);
         try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
             clipboard = reader.read();

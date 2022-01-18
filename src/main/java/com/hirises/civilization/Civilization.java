@@ -231,11 +231,13 @@ public final class Civilization extends JavaPlugin implements Listener {
                                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
                                 for(Player player : spawn.keySet()){
                                     if(player.isOnline()){
+                                        resetPlayer(player);
                                         prepareNewPlayer(player);
                                         player.teleport(spawn.get(player));
                                     }
                                 }
                                 for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> PlayerListener.inValidWorld(value)).collect(Collectors.toList())){
+                                    resetPlayer(player);
                                     prepareNewPlayer(player);
                                     getNewSpawnPoint(player, false);
                                 }
@@ -260,7 +262,6 @@ public final class Civilization extends JavaPlugin implements Listener {
                                 WorldBorder border_nether = world_nether.getWorldBorder();
                                 border_nether.setCenter(0, 0);
                                 border_nether.setSize((float)worldSize / 8);
-                                Util.logging((float)worldSize / 8);
 
                                 WorldBorder border_end = world_end.getWorldBorder();
                                 border_end.setCenter(0, 0);

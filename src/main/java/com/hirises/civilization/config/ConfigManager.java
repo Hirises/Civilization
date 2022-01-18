@@ -16,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
 import java.util.*;
 
 public class ConfigManager {
@@ -55,6 +56,11 @@ public class ConfigManager {
         cacheStore.checkExistAll();
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
+
+        File file = new File(Civilization.getInst().getDataFolder().getAbsolutePath() + "/Schematics/");
+        if(!file.exists()){
+            file.mkdirs();
+        }
     }
 
     public static PlayerCache getCache(UUID uuid){

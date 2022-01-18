@@ -35,7 +35,7 @@
         - '2'
         - '3'
   '4':
-    portals:
+    portal:
       count: 4
       variants:
         - '1'

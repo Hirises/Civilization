@@ -11,18 +11,18 @@ import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -63,6 +63,20 @@ public class PlayerListener implements Listener {
     public static boolean inValidWorld(Player player){
         World world = player.getWorld();
         return !Civilization.world.equals(world) && !Civilization.world_nether.equals(world) && !Civilization.world_end.equals(world);
+    }
+
+    @EventHandler
+    public void disablePortal(PlayerInteractEvent event){
+        if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
+            if(event.getItem().getType().equals(Material.ENDER_EYE)){
+                Block block = event.getClickedBlock();
+                if(block.getType().equals(Material.END_PORTAL_FRAME)){
+                    if(!ConfigManager.isConflict(block.getWorld(), block.getLocation(), "crack")){
+                        event.setCancelled(true);
+                    }
+                }
+            }
+        }
     }
 
     @EventHandler
