@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 
 public class ConfigManager {
+    public static YamlStore state = new YamlStore(Civilization.getInst(), "state.yml");
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
     public static int killRange;
     public static YamlStore cache = new YamlStore(Civilization.getInst(), "cache.yml");
@@ -32,6 +33,7 @@ public class ConfigManager {
     private static ItemStack moneyItem;
 
     public static void init(){
+        state.load(true);
         config.load(true);
         cache.load(true);
         save.load(true);

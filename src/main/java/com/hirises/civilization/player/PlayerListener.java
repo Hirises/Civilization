@@ -5,6 +5,7 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
+import com.hirises.civilization.util.NetherPortal;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
@@ -13,6 +14,7 @@ import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -67,19 +70,24 @@ public class PlayerListener implements Listener {
         if(!Civilization.isStart()){
             return;
         }
-        Location location = event.getTo();
-        switch (location.getWorld().getName()){
-            case "world":
-                location.setWorld(Civilization.world);
+        event.setCancelled(true);
+        switch (event.getTo().getWorld().getName()){
+            case "world_nether":{
+                if(event.getFrom().getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
+                    NetherPortal portal = new NetherPortal(Civilization.world.getName(), event.getFrom());
+                    event.getEntity().teleport(portal.getTo());
+                    break;
+                }else{
+                    NetherPortal portal = new NetherPortal(Civilization.world_nether.getName(), event.getFrom());
+                    event.getEntity().teleport(portal.getTo());
+                    break;
+                }
+            }
+            case "world_the_end":{
+                event.getEntity().teleport(Civilization.world_end.getSpawnLocation());
                 break;
-            case "world_nether":
-                location.setWorld(Civilization.world_nether);
-                break;
-            case "world_end":
-                location.setWorld(Civilization.world_end);
-                break;
+            }
         }
-        event.setTo(location);
     }
 
     @EventHandler
@@ -87,22 +95,23 @@ public class PlayerListener implements Listener {
         if(!Civilization.isStart()){
             return;
         }
-        Location location = event.getTo();
-        Util.logging(location);
-        switch (location.getWorld().getName()){
-            case "world":
-                location.setWorld(Civilization.world);
+        event.setCancelled(true);
+        switch (event.getTo().getWorld().getName()){
+            case "world":{
+                NetherPortal portal = new NetherPortal(Civilization.world.getName(), event.getFrom());
+                event.getPlayer().teleport(portal.getTo());
                 break;
-            case "world_nether":
-                location.setWorld(Civilization.world_nether);
+            }
+            case "world_nether":{
+                NetherPortal portal = new NetherPortal(Civilization.world_nether.getName(), event.getFrom());
+                event.getPlayer().teleport(portal.getTo());
                 break;
-            case "world_end":
-                location.setWorld(Civilization.world_end);
+            }
+            case "world_the_end":{
+                event.getPlayer().teleport(Civilization.world_end.getSpawnLocation());
                 break;
+            }
         }
-        event.setTo(location);
-        Util.logging(location);
-        event.setCanCreatePortal(true);
     }
 
    public static void updateScoreBoard(UUID uuid){
@@ -197,10 +206,11 @@ public class PlayerListener implements Listener {
         Location spawn = player.getBedSpawnLocation();
         if(spawn == null){
             PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-            event.setRespawnLocation(cache.getSpawn());
-        }else{
-            event.setRespawnLocation(spawn);
+            spawn = cache.getSpawn();
+            spawn.getBlock().setType(Material.AIR);
+            spawn.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
         }
+        event.setRespawnLocation(spawn);
 
         Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
             int invincibleTime = (int) ConfigManager.config.getOrDefault(new TimeUnit(), "리스폰무적").getTick();

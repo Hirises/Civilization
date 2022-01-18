@@ -4,6 +4,7 @@ main: com.hirises.civilization.Civilization
 api-version: 1.18
 depend:
   - Core1.18
+  - WorldEdit
 loadbefore:
   - Core1.18
 commands:

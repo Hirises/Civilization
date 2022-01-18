@@ -10,20 +10,7 @@ import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.task.CancelableTask;
-import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
-import com.sk89q.worldedit.bukkit.BukkitWorld;
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.extent.clipboard.io.*;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.CuboidRegion;
-import com.sk89q.worldedit.session.ClipboardHolder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -51,20 +38,30 @@ public final class Civilization extends JavaPlugin implements Listener {
     public static World world_end;
     public volatile static Boolean onProgress;
 
+
+    public static int worldBorderRadius;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
         plugin = this;
         onProgress = false;
 
-        isStart = (new YamlStore(plugin, "save.yml")).get(Boolean.class, "start");
+        isStart = (new YamlStore(plugin, "state.yml")).get(Boolean.class, "start");
         if(isStart()){
-            world = Bukkit.createWorld(new WorldCreator("Civilization"));
-            world_nether = Bukkit.createWorld(new WorldCreator("Civilization_Nether"));
-            world_end = Bukkit.createWorld(new WorldCreator("Civilization_TheEnd"));
+            WorldCreator creator = new WorldCreator("Civilization");
+            world = Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL));
+
+            WorldCreator creator_nether = new WorldCreator("Civilization_Nether");
+            world_nether = Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER));
+
+            WorldCreator creator_theEnd = new WorldCreator("Civilization_TheEnd");
+            world_end = Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END));
         }
 
         ConfigManager.init();
+
+        worldBorderRadius = ConfigManager.config.get(Integer.class, "월드지름") / 2;
 
         getCommand("menu").setExecutor(new UserCommand());
         getCommand("money").setExecutor(new UserCommand());
@@ -100,6 +97,7 @@ public final class Civilization extends JavaPlugin implements Listener {
             }
             ConfigManager.save.removeKey("자유시장");
             ConfigManager.save.removeKey("구조물");
+            ConfigManager.save.removeKey("지옥문");
             ConfigManager.save.save();
             ConfigManager.cacheStore.removeAll();
             ConfigManager.cacheStore.unloadAll();
@@ -153,8 +151,8 @@ public final class Civilization extends JavaPlugin implements Listener {
 
             Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
             isStart = false;
-            ConfigManager.save.set("start", false);
-            ConfigManager.save.save();
+            ConfigManager.state.set("start", false);
+            ConfigManager.state.save();
 
             Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
 
@@ -205,32 +203,17 @@ public final class Civilization extends JavaPlugin implements Listener {
 
             Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "1/3"));
             WorldCreator creator = new WorldCreator("Civilization");
-            creator.type(WorldType.NORMAL);
-            creator.environment(World.Environment.NORMAL);
-            world = Bukkit.createWorld(creator);
-            WorldBorder border = world.getWorldBorder();
-            border.setCenter(0, 0);
-            border.setSize(worldSize);
+            world = Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL));
 
             Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "2/3"));
                 WorldCreator creator_nether = new WorldCreator("Civilization_Nether");
-                creator.type(WorldType.NORMAL);
-                creator_nether.environment(World.Environment.NETHER);
-                world_nether = Bukkit.createWorld(creator_nether);
-                WorldBorder border_nether = world_nether.getWorldBorder();
-                border_nether.setCenter(0, 0);
-                border_nether.setSize(worldSize / 8);
+                world_nether = Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER));
 
                 Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                     Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "3/3"));
                     WorldCreator creator_theEnd = new WorldCreator("Civilization_TheEnd");
-                    creator_theEnd.type(WorldType.NORMAL);
-                    creator_theEnd.environment(World.Environment.THE_END);
-                    world_end = Bukkit.createWorld(creator_theEnd);
-                    WorldBorder border_end = world_nether.getWorldBorder();
-                    border_end.setCenter(0, 0);
-                    border_end.setSize(500);
+                    world_end = Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END));
 
                     Map<Player, Location> spawn = new HashMap<>();
                     for(Player player : Bukkit.getOnlinePlayers()){
@@ -241,9 +224,9 @@ public final class Civilization extends JavaPlugin implements Listener {
                         int count = 0;
                         @Override
                         public void run() {
-                            if(count >= 100){
-                                ConfigManager.save.set("start", true);
-                                ConfigManager.save.save();
+                            if(count > 100){
+                                ConfigManager.state.set("start", true);
+                                ConfigManager.state.save();
                                 isStart = true;
                                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
                                 for(Player player : spawn.keySet()){
@@ -269,7 +252,24 @@ public final class Civilization extends JavaPlugin implements Listener {
                             }
 
                             Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY + count + "/100"));
+                            if(count == 0){
+                                WorldBorder border = world.getWorldBorder();
+                                border.setCenter(0, 0);
+                                border.setSize(worldSize);
+
+                                WorldBorder border_nether = world_nether.getWorldBorder();
+                                border_nether.setCenter(0, 0);
+                                border_nether.setSize((float)worldSize / 8);
+                                Util.logging((float)worldSize / 8);
+
+                                WorldBorder border_end = world_nether.getWorldBorder();
+                                border_end.setCenter(0, 0);
+                                border_end.setSize(1000);
+                            }
                             for(String key : ConfigManager.config.getKeys("구조물." + (count / 10))){
+                                if(key.trim().equalsIgnoreCase("")){
+                                    continue;
+                                }
                                 List<String> variants = ConfigManager.config.getConfig().getStringList("구조물." + (count / 10) + "." + key + ".variants");
                                 for(int i = 0; i < ConfigManager.config.get(Integer.class, "구조물." + (count / 10) + "." + key + ".count"); i++){
                                     Structure.placeStructure(key + variants.get((new Random()).nextInt(variants.size())));
@@ -284,12 +284,10 @@ public final class Civilization extends JavaPlugin implements Listener {
     }
 
     public static Location getRandomLocation(int dx, int dz, boolean safe){
-        int spawnRadius = ConfigManager.config.get(Integer.class, "월드지름") / 2;
-        Location location = world.getWorldBorder().getCenter();
         Location output = null;
         do{
-            output = location.clone().add(new Random().nextInt((spawnRadius * 2) - dx) - spawnRadius, 0,
-                    new Random().nextInt((spawnRadius * 2) - dz)  - spawnRadius);
+            output = new Location(world, 0, 0, 0).clone().add(new Random().nextInt((worldBorderRadius * 2) - dx) - worldBorderRadius, 0,
+                    new Random().nextInt((worldBorderRadius * 2) - dz)  - worldBorderRadius);
         }while (ConfigManager.isConflict(world, output));
 
         if(safe){
