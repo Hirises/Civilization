@@ -1,28 +1,24 @@
 package com.hirises.civilization.gui;
 
-import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.flag.Flags;
-import com.hirises.core.inventory.GUI;
+import com.hirises.core.inventory.AbstractGUI;
 import com.hirises.core.inventory.GUIEventResult;
 import com.hirises.core.inventory.GUIFlags;
 import com.hirises.core.inventory.ui.GUIContainer;
 import com.hirises.core.inventory.ui.GUIStateButton;
 import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Util;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 
-public class FreeShopCostGUI extends GUI {
+public class FreeShopCostGUI extends AbstractGUI {
     private ItemStack target;
 
     public FreeShopCostGUI(ItemStack target) {
@@ -75,7 +71,7 @@ public class FreeShopCostGUI extends GUI {
     }
 
     @Override
-    protected GUI self() {
+    protected AbstractGUI self() {
         return this;
     }
 }

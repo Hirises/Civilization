@@ -2,10 +2,9 @@ package com.hirises.civilization.gui;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
-import com.hirises.civilization.player.PlayerCache;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.flag.Flags;
-import com.hirises.core.inventory.GUI;
+import com.hirises.core.inventory.AbstractGUI;
 import com.hirises.core.inventory.GUIFlags;
 import com.hirises.core.inventory.ui.GUIContainer;
 import com.hirises.core.inventory.ui.GUIPageContainer;
@@ -16,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.stream.Collectors;
 
-public class FreeShopMyItemGUI extends GUI {
+public class FreeShopMyItemGUI extends AbstractGUI {
     private GUIPageContainer container;
 
     public FreeShopMyItemGUI() {
@@ -73,7 +72,7 @@ public class FreeShopMyItemGUI extends GUI {
     }
 
     @Override
-    protected GUI self() {
+    protected AbstractGUI self() {
         return this;
     }
 }

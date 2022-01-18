@@ -2,16 +2,14 @@ package com.hirises.civilization.gui;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.flag.Flags;
-import com.hirises.core.inventory.GUI;
+import com.hirises.core.inventory.AbstractGUI;
 import com.hirises.core.inventory.GUIFlags;
 import com.hirises.core.inventory.ui.GUIContainer;
 import com.hirises.core.inventory.ui.GUIStateButton;
 import com.hirises.core.util.ItemUtil;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-
-public class FreeShopRegisterGUI extends GUI {
+public class FreeShopRegisterGUI extends AbstractGUI {
     public FreeShopRegisterGUI() {
         super(new Flags<>(GUIFlags.PREVENT_TOP_INVENTORY_MODIFY), ConfigManager.menu.get("자유시장_등록"));
     }
@@ -38,7 +36,7 @@ public class FreeShopRegisterGUI extends GUI {
     }
 
     @Override
-    protected GUI self() {
+    protected AbstractGUI self() {
         return this;
     }
 }

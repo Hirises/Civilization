@@ -2,11 +2,11 @@ package com.hirises.civilization.gui;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.flag.Flags;
-import com.hirises.core.inventory.GUI;
+import com.hirises.core.inventory.AbstractGUI;
 import com.hirises.core.inventory.GUIFlags;
 import com.hirises.core.inventory.ui.GUIStateButton;
 
-public class MainGUI extends GUI {
+public class MainGUI extends AbstractGUI {
     public MainGUI() {
         super(new Flags<>(GUIFlags.PREVENT_TOP_INVENTORY_MODIFY), ConfigManager.menu.get("메인메뉴"));
     }
@@ -39,7 +39,7 @@ public class MainGUI extends GUI {
     }
 
     @Override
-    protected GUI self() {
+    protected AbstractGUI self() {
         return this;
     }
 }

@@ -2,7 +2,7 @@ package com.hirises.civilization.gui;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.flag.Flags;
-import com.hirises.core.inventory.GUI;
+import com.hirises.core.inventory.AbstractGUI;
 import com.hirises.core.inventory.GUIFlags;
 import com.hirises.core.inventory.ui.GUIContainer;
 import com.hirises.core.inventory.ui.GUIPageContainer;
@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PrizeViewGUI extends GUI {
+public class PrizeViewGUI extends AbstractGUI {
     GUIPageContainer container;
 
     public PrizeViewGUI() {
@@ -62,7 +62,7 @@ public class PrizeViewGUI extends GUI {
     }
 
     @Override
-    protected GUI self() {
+    protected AbstractGUI self() {
         return this;
     }
 
