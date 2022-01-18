@@ -262,7 +262,7 @@ public final class Civilization extends JavaPlugin implements Listener {
                                 border_nether.setSize((float)worldSize / 8);
                                 Util.logging((float)worldSize / 8);
 
-                                WorldBorder border_end = world_nether.getWorldBorder();
+                                WorldBorder border_end = world_end.getWorldBorder();
                                 border_end.setCenter(0, 0);
                                 border_end.setSize(1000);
                             }
