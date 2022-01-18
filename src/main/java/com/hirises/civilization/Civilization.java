@@ -6,26 +6,37 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.player.PlayerListener;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
-import com.hirises.core.event.CoreInitEvent;
 import com.hirises.core.event.GUIGetEvent;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.task.CancelableTask;
+import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.*;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Objective;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -65,9 +76,8 @@ public final class Civilization extends JavaPlugin implements Listener {
             if(!isStart()){
                 return;
             }
-            Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "저장중입니다..."));
+            Util.broadcast(new TextComponent(ChatColor.YELLOW + "저장중입니다..."));
             ConfigManager.cacheStore.saveAll();
-            ConfigManager.cacheStore.checkExistAll();
         }, 5 * 60 * 20, 5 * 60 * 20);
     }
 
@@ -82,9 +92,13 @@ public final class Civilization extends JavaPlugin implements Listener {
             }
             onProgress = true;
 
-            Bukkit.broadcast(new TextComponent(ChatColor.RED + "게임을 초기화합니다..."));
+            Util.broadcast(new TextComponent(ChatColor.RED + "게임을 초기화합니다..."));
             ConfigManager.shopItem.clear();
+            for(List<Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>> list : ConfigManager.structureList.values()){
+                list.clear();
+            }
             ConfigManager.save.removeKey("자유시장");
+            ConfigManager.save.removeKey("구조물");
             ConfigManager.save.save();
             ConfigManager.cacheStore.removeAll();
             ConfigManager.cacheStore.unloadAll();
@@ -94,13 +108,13 @@ public final class Civilization extends JavaPlugin implements Listener {
             ConfigManager.cache.save();
 
             if(isStart){
-                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 초기화시킵니다..."));
+                Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 초기화시킵니다..."));
                 for(Player player : Bukkit.getOnlinePlayers()){
                     resetPlayer(player);
                     ScoreBoardHandler.hide(player, ScoreBoardHandler.getOrNew(player));
                 }
 
-                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
+                Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
                 World overWorld = Bukkit.getWorld("world");
                 for(Player player : world.getPlayers()){
                     player.teleport(overWorld.getSpawnLocation());
@@ -115,7 +129,7 @@ public final class Civilization extends JavaPlugin implements Listener {
                 }
                 Bukkit.unloadWorld(world_end, false);
 
-                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "월드 제거중..."));
+                Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드 제거중..."));
                 File file = plugin.getDataFolder();
                 String path = file.getAbsolutePath();
                 path = path.substring(0, path.lastIndexOf("\\"));
@@ -136,12 +150,12 @@ public final class Civilization extends JavaPlugin implements Listener {
                 deleteWalk(Path.of(path));
             }
 
-            Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
+            Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
             isStart = false;
             ConfigManager.save.set("start", false);
             ConfigManager.save.save();
 
-            Bukkit.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
+            Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
 
             onProgress = false;
         }, 20);
@@ -185,10 +199,10 @@ public final class Civilization extends JavaPlugin implements Listener {
             }
             onProgress = true;
 
-            Bukkit.broadcast(new TextComponent(ChatColor.GREEN + "새로운 게임을 시작합니다..."));
+            Util.broadcast(new TextComponent(ChatColor.GREEN + "새로운 게임을 시작합니다..."));
             int worldSize = ConfigManager.config.get(Integer.class, "월드지름");
 
-            Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "1/3"));
+            Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "1/3"));
             WorldCreator creator = new WorldCreator("Civilization");
             creator.type(WorldType.NORMAL);
             creator.environment(World.Environment.NORMAL);
@@ -198,7 +212,7 @@ public final class Civilization extends JavaPlugin implements Listener {
             border.setSize(worldSize);
 
             Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
-                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "2/3"));
+                Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "2/3"));
                 WorldCreator creator_nether = new WorldCreator("Civilization_Nether");
                 creator.type(WorldType.NORMAL);
                 creator_nether.environment(World.Environment.NETHER);
@@ -208,7 +222,7 @@ public final class Civilization extends JavaPlugin implements Listener {
                 border_nether.setSize(worldSize / 8);
 
                 Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
-                    Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "3/3"));
+                    Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "3/3"));
                     WorldCreator creator_theEnd = new WorldCreator("Civilization_TheEnd");
                     creator_theEnd.type(WorldType.NORMAL);
                     creator_theEnd.environment(World.Environment.THE_END);
@@ -230,7 +244,7 @@ public final class Civilization extends JavaPlugin implements Listener {
                                 ConfigManager.save.set("start", true);
                                 ConfigManager.save.save();
                                 isStart = true;
-                                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
+                                Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
                                 for(Player player : spawn.keySet()){
                                     if(player.isOnline()){
                                         prepareNewPlayer(player);
@@ -242,17 +256,25 @@ public final class Civilization extends JavaPlugin implements Listener {
                                     getNewSpawnPoint(player, false);
                                 }
 
-                                Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
+                                Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
                                 ConfigManager.cacheStore.checkExistAll();
                                 ConfigManager.cacheStore.saveAll();
+                                ConfigManager.saveStructure();
 
-                                Bukkit.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
+                                Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
                                 cancel();
                                 onProgress = false;
                                 return;
                             }
+
+                            Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY + count + "/100"));
                             count += 10;
-                            Bukkit.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY + count + "/100"));
+                            switch (count){
+                                case 10:{
+                                    placeStructure("test");
+                                    break;
+                                }
+                            }
                         }
                     };
                 }, 20);
@@ -260,16 +282,33 @@ public final class Civilization extends JavaPlugin implements Listener {
         }, 40);
     }
 
-    public static Location getNewSpawnPoint(Player player, boolean asynchronous){
+    public static Location getRandomLocation(int dx, int dz, boolean safe){
         int spawnRadius = ConfigManager.config.get(Integer.class, "월드지름") / 2;
         Location location = world.getWorldBorder().getCenter();
-        Location spawn = location.clone().add(new Random().nextInt(spawnRadius * 2) - spawnRadius, 0, new Random().nextInt(spawnRadius * 2)  - spawnRadius);
-        spawn.setY(world.getHighestBlockYAt(spawn.getBlockX(), spawn.getBlockZ()));
-        spawn.add(0, 1, 0);
-        while (spawn.getBlock().getType().equals(Material.WATER) || spawn.getBlock().getType().equals(Material.LAVA)){
-            spawn.add(0, 1, 0);
+        Location output = null;
+        do{
+            output = location.clone().add(new Random().nextInt((spawnRadius * 2) - dx) - spawnRadius, 0,
+                    new Random().nextInt((spawnRadius * 2) - dz)  - spawnRadius);;
+        }while (ConfigManager.isConflict(output));
+
+        if(safe){
+            output.setY(world.getHighestBlockYAt(output.getBlockX(), output.getBlockZ(), HeightMap.MOTION_BLOCKING_NO_LEAVES));
+            output.add(0, 1, 0);
+            while (output.getBlock().getType().equals(Material.POWDER_SNOW)){
+                output.add(0, 1, 0);
+            }
         }
+
+        return output;
+    }
+
+    public static Location getNewSpawnPoint(Player player, boolean asynchronous){
+        Location spawn = getRandomLocation(1, 1, true);
+
         spawn.clone().add(0, -1, 0).getBlock().setType(Material.BEDROCK);
+        spawn.clone().getBlock().setType(Material.AIR);
+        spawn.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
+
         spawn.setWorld(world);
         spawn.add(0.5, 0, 0.5);
         if (asynchronous) {
@@ -279,7 +318,45 @@ public final class Civilization extends JavaPlugin implements Listener {
         }
         player.setBedSpawnLocation(spawn, true);
         ConfigManager.getCache(player.getUniqueId()).setSpawn(spawn);
+        ConfigManager.addStructure(world, spawn, spawn);
+
         return spawn;
+    }
+
+    private static void placeStructure(String name){
+        Clipboard clipboard = getStructure(name);
+
+        int width = clipboard.getRegion().getWidth();
+        int length = clipboard.getRegion().getLength();
+        Location location = getRandomLocation(width, length,true);
+        ConfigManager.addStructure(location.getWorld(), location, location.clone().add(width, 0, length));
+
+        pasteStructure(clipboard, location);
+    }
+
+    private static Clipboard getStructure(String name){
+        Clipboard clipboard = null;
+        File file = new File(getInst().getDataFolder().getAbsolutePath() + "/Schematics/" + name + ".schem");
+        Util.logging(file.getAbsolutePath());
+        ClipboardFormat format = ClipboardFormats.findByFile(file);
+        try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
+            clipboard = reader.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return clipboard;
+    }
+
+    private static void pasteStructure(Clipboard clipboard, Location location){
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(new BukkitWorld(location.getWorld()))) {
+            Operation operation = new ClipboardHolder(clipboard)
+                    .createPaste(editSession)
+                    .to(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
+                    .build();
+            Operations.complete(operation);
+        } catch (WorldEditException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void prepareNewPlayer(Player player){
