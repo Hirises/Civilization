@@ -38,6 +38,9 @@ public class PlayerListener implements Listener {
                 Civilization.resetPlayer(player);
                 Civilization.prepareNewPlayer(player);
                 Civilization.getNewSpawnPoint(player, false);
+                ConfigManager.cacheStore.save(player);
+                ConfigManager.cache.save();
+                ConfigManager.saveStructure();
             }else{
                 //그냥 입장시
                 Objective board = ScoreBoardHandler.getOrNew(player);

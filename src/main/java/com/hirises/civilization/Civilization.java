@@ -4,6 +4,7 @@ import com.hirises.civilization.command.OPCommand;
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.player.PlayerListener;
+import com.hirises.civilization.util.Structure;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
@@ -94,7 +95,7 @@ public final class Civilization extends JavaPlugin implements Listener {
 
             Util.broadcast(new TextComponent(ChatColor.RED + "게임을 초기화합니다..."));
             ConfigManager.shopItem.clear();
-            for(List<Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>> list : ConfigManager.structureList.values()){
+            for(List<Structure> list : ConfigManager.structureList.values()){
                 list.clear();
             }
             ConfigManager.save.removeKey("자유시장");
@@ -268,13 +269,13 @@ public final class Civilization extends JavaPlugin implements Listener {
                             }
 
                             Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY + count + "/100"));
-                            count += 10;
-                            switch (count){
-                                case 10:{
-                                    placeStructure("test");
-                                    break;
+                            for(String key : ConfigManager.config.getKeys("구조물." + (count / 10))){
+                                List<String> variants = ConfigManager.config.getConfig().getStringList("구조물." + (count / 10) + "." + key + ".variants");
+                                for(int i = 0; i < ConfigManager.config.get(Integer.class, "구조물." + (count / 10) + "." + key + ".count"); i++){
+                                    Structure.placeStructure(key + variants.get((new Random()).nextInt(variants.size())));
                                 }
                             }
+                            count += 10;
                         }
                     };
                 }, 20);
@@ -288,8 +289,8 @@ public final class Civilization extends JavaPlugin implements Listener {
         Location output = null;
         do{
             output = location.clone().add(new Random().nextInt((spawnRadius * 2) - dx) - spawnRadius, 0,
-                    new Random().nextInt((spawnRadius * 2) - dz)  - spawnRadius);;
-        }while (ConfigManager.isConflict(output));
+                    new Random().nextInt((spawnRadius * 2) - dz)  - spawnRadius);
+        }while (ConfigManager.isConflict(world, output));
 
         if(safe){
             output.setY(world.getHighestBlockYAt(output.getBlockX(), output.getBlockZ(), HeightMap.MOTION_BLOCKING_NO_LEAVES));
@@ -318,45 +319,9 @@ public final class Civilization extends JavaPlugin implements Listener {
         }
         player.setBedSpawnLocation(spawn, true);
         ConfigManager.getCache(player.getUniqueId()).setSpawn(spawn);
-        ConfigManager.addStructure(world, spawn, spawn);
+        ConfigManager.addStructure("spawn", world, spawn, spawn);
 
         return spawn;
-    }
-
-    private static void placeStructure(String name){
-        Clipboard clipboard = getStructure(name);
-
-        int width = clipboard.getRegion().getWidth();
-        int length = clipboard.getRegion().getLength();
-        Location location = getRandomLocation(width, length,true);
-        ConfigManager.addStructure(location.getWorld(), location, location.clone().add(width, 0, length));
-
-        pasteStructure(clipboard, location);
-    }
-
-    private static Clipboard getStructure(String name){
-        Clipboard clipboard = null;
-        File file = new File(getInst().getDataFolder().getAbsolutePath() + "/Schematics/" + name + ".schem");
-        Util.logging(file.getAbsolutePath());
-        ClipboardFormat format = ClipboardFormats.findByFile(file);
-        try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
-            clipboard = reader.read();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return clipboard;
-    }
-
-    private static void pasteStructure(Clipboard clipboard, Location location){
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(new BukkitWorld(location.getWorld()))) {
-            Operation operation = new ClipboardHolder(clipboard)
-                    .createPaste(editSession)
-                    .to(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
-                    .build();
-            Operations.complete(operation);
-        } catch (WorldEditException e) {
-            e.printStackTrace();
-        }
     }
 
     public static void prepareNewPlayer(Player player){
@@ -387,6 +352,7 @@ public final class Civilization extends JavaPlugin implements Listener {
         }
         ConfigManager.saveShopItem();
         ConfigManager.cacheStore.saveAll();
+        ConfigManager.saveStructure();
     }
 
     public static Civilization getInst() {

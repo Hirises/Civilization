@@ -5,6 +5,42 @@
 킬골드: 10000
 사망골드: -10000
 월드지름: 5000
+구조물:
+  '0':
+    crack:
+      count: 1
+      variants:
+        - '1'
+        - '2'
+        - '3'
+  '1':
+    ruins:
+      count: 10
+      variants:
+        - '1'
+        - '2'
+        - '3'
+  '2':
+    altar:
+      count: 4
+      variants:
+        - '1'
+        - '2'
+        - '3'
+  '3':
+    lode:
+      count: 10
+      variants:
+        - '1'
+        - '2'
+        - '3'
+  '4':
+    portals:
+      count: 4
+      variants:
+        - '1'
+        - '2'
+        - '3'
 초반무적:
   시간: 0
   분: 5
