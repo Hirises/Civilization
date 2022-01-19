@@ -6,6 +6,7 @@ import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.data.Structure;
 import com.hirises.core.util.Pair;
+import com.hirises.core.util.Util;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -19,11 +20,10 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
-import org.bukkit.HeightMap;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -182,7 +182,13 @@ public final class NMSSupport {
         }
     }
 
-    public static void spawnFireWorks(Location location){
-
+    public static void spawnFireWork(Location location){
+        Firework fw = location.getWorld().spawn(location, Firework.class);
+        FireworkMeta meta = fw.getFireworkMeta();
+        meta.addEffect(FireworkEffect.builder().withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.LIME)
+                .withFade(Color.BLUE, Color.TEAL, Color.AQUA, Color.PURPLE, Color.FUCHSIA)
+                .flicker(true).trail(true).with(FireworkEffect.Type.BALL_LARGE).build());
+        meta.setPower(3);
+        fw.setFireworkMeta(meta);
     }
 }

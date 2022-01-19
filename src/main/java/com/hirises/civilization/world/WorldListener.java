@@ -5,7 +5,6 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.Structure;
 import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Util;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -43,7 +42,6 @@ public class WorldListener implements Listener {
 
     @EventHandler
     public void onEnderDragonKilled(EntityDamageByEntityEvent event){
-        Util.logging("damage");
         if(!Civilization.isRunning()){
             return;
         }

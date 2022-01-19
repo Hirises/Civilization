@@ -12,9 +12,11 @@ import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
 import com.hirises.core.store.YamlStore;
+import com.hirises.core.task.CancelableTask;
 import com.hirises.core.util.Util;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -195,6 +197,7 @@ public final class Civilization extends JavaPlugin{
 
             Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
             isStart = false;
+            isFinish = false;
             ConfigManager.state.set("start", false);
             ConfigManager.state.set("finish", false);
             ConfigManager.state.save();
@@ -251,39 +254,47 @@ public final class Civilization extends JavaPlugin{
                     border_end.setCenter(0, 0);
                     border_end.setSize(world.getSize());
 
-                    Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... "));
-                    Bukkit.getScheduler().runTaskLaterAsynchronously(Civilization.getInst(), () -> {
-                        genStructure(spawn);
-                    }, 3 * 20);
+                    Util.broadcast(new TextComponent(ChatColor.YELLOW + "구조물을 배치합니다... "));
+                    genStructure();
 
-                    Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
-                        ConfigManager.state.set("start", true);
-                        ConfigManager.state.set("finish", false);
-                        ConfigManager.state.save();
-                        isStart = true;
-                        Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
-                        for(Player player : spawn.keySet()){
-                            if(player.isOnline()){
-                                resetPlayer(player);
-                                prepareNewPlayer(player);
-                                player.teleport(spawn.get(player));
+                    new CancelableTask(plugin, 20, 20){
+                        int count = 20;
+                        @Override
+                        public void run() {
+                            if(count <= 0){
+                                ConfigManager.state.set("start", true);
+                                ConfigManager.state.set("finish", false);
+                                ConfigManager.state.save();
+                                isStart = true;
+                                isFinish = false;
+                                Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
+                                for(Player player : spawn.keySet()){
+                                    if(player.isOnline()){
+                                        resetPlayer(player);
+                                        prepareNewPlayer(player);
+                                        player.teleport(spawn.get(player));
+                                    }
+                                }
+                                for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> NMSSupport.inValidWorld(value)).collect(Collectors.toList())){
+                                    resetPlayer(player);
+                                    prepareNewPlayer(player);
+                                    getNewSpawnPoint(player, false);
+                                }
+
+                                Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
+                                ConfigManager.cacheStore.checkExistAll();
+                                ConfigManager.cacheStore.saveAll();
+                                ConfigManager.saveStructures();
+
+                                Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
+                                onProgress = false;
+                                cancel();
+                                return;
                             }
-                        }
-                        for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> NMSSupport.inValidWorld(value)).collect(Collectors.toList())){
-                            resetPlayer(player);
-                            prepareNewPlayer(player);
-                            getNewSpawnPoint(player, false);
-                        }
 
-                        Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
-                        ConfigManager.cacheStore.checkExistAll();
-                        ConfigManager.cacheStore.saveAll();
-                        ConfigManager.saveStructures();
-
-                        Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
-                        onProgress = false;
-                        return;
-                    }, 10 * 20 + 3 * 20);
+                            Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다...   " + ChatColor.GRAY + count-- + "s left"));
+                        }
+                    };
                 }, 20);
             }, 20);
         }, 40);
@@ -299,11 +310,32 @@ public final class Civilization extends JavaPlugin{
         for(Player player : Bukkit.getOnlinePlayers()){
             winnerAlert.play(player, Util.toRemap("winner", name));
         }
+
+        new CancelableTask(Civilization.getInst(), 2, 2){
+            World end = Civilization.world_end.get();
+            int count = 0;
+            @Override
+            public void run() {
+                Location location = new Location(end, new Random().nextInt(100) - 50 + 0.5, 45, new Random().nextInt(100) - 50 + 0.5);
+                Block block = location.getBlock();
+                if(block == null || block.getType().equals(Material.AIR) || block.getType().equals(Material.OBSIDIAN)){
+                    return;
+                }
+                location.setY(end.getHighestBlockYAt(location.getBlockX(), location.getBlockZ()) + 1);
+                NMSSupport.spawnFireWork(location);
+
+                count += 1;
+                if(count >= 30 * 10){
+                    cancel();
+                    return;
+                }
+            }
+        };
     }
 
     //endregion
 
-    public static void genStructure(Map<Player, Location> spawn){
+    public static void genStructure(){
         Set<String> keys = ConfigManager.config.getKeys("구조물");
         for(String key : keys){
             if(key.trim().equalsIgnoreCase("")){
