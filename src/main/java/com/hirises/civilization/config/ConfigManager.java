@@ -16,7 +16,6 @@ import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
-import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
@@ -59,11 +58,13 @@ public class ConfigManager {
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
     }
 
-    public static void addStructure(String type, String world, Location loc1, Location loc2){
-        addStructure(type, world, loc1, loc2, false);
+    public static Structure addStructure(String type, String world, Location loc1, Location loc2){
+        return addStructure(type, world, loc1, loc2, false);
     }
-    public static void addStructure(String type, String world, Location loc1, Location loc2, boolean placed){
-        addStructure(new Structure(type, world, loc1, loc2, placed));
+    public static Structure addStructure(String type, String world, Location loc1, Location loc2, boolean placed){
+        Structure structure = new Structure(type, world, loc1, loc2, placed);
+        addStructure(structure);
+        return structure;
     }
 
     public static void addStructure(Structure structure){

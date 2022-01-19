@@ -95,7 +95,11 @@ public final class NMSSupport {
         int width = region.getWidth() - 1;
         int length = region.getLength() - 1;
         Location location = getRandomLocation(world, width, length,false);
-        ConfigManager.addStructure(type, world.getName(), location, location.clone().add(width - 1, 0, length - 1));
+        Structure structure = ConfigManager.addStructure(type, world.getName(), location, location.clone().add(width - 1, 0, length - 1));
+
+        if(structure.getMinChunk().isLoaded()){
+            structure.place();
+        }
     }
 
     public static Clipboard getStructure(String name){

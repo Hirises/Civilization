@@ -1,6 +1,7 @@
 package com.hirises.civilization.util;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
+import com.hirises.core.util.Pair;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -12,6 +13,7 @@ public class Structure implements DataUnit {
     int maxX;
     int maxY;
     int maxZ;
+    ChunkData minChunk;
     String world;
     String type;
     boolean placed;
@@ -21,13 +23,8 @@ public class Structure implements DataUnit {
     }
 
     public Structure(String type, String world, Location loc1, Location loc2, boolean placed){
-        minX = Math.min(loc1.getBlockX(), loc2.getBlockX());
-        minZ = Math.min(loc1.getBlockZ(), loc2.getBlockZ());
-        maxX = Math.max(loc1.getBlockX(), loc2.getBlockX());
-        maxZ = Math.max(loc1.getBlockZ(), loc2.getBlockZ());
-        this.world = world;
-        this.type = type;
-        this.placed = placed;
+        this(type, world, Math.min(loc1.getBlockX(), loc2.getBlockX()), Math.min(loc1.getBlockZ(), loc2.getBlockZ()),
+                Math.max(loc1.getBlockX(), loc2.getBlockX()), Math.max(loc1.getBlockZ(), loc2.getBlockZ()), placed);
     }
 
     public Structure(String type, String world, int minX, int minZ, int maxX, int maxZ, boolean placed){
@@ -37,6 +34,9 @@ public class Structure implements DataUnit {
         this.maxZ = maxZ;
         this.world = world;
         this.placed = placed;
+        this.type = type;
+        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(minX, minZ);
+        this.minChunk = new ChunkData(world, chunkPos.getLeft(), chunkPos.getRight());
     }
 
     public void place(){
@@ -94,5 +94,9 @@ public class Structure implements DataUnit {
 
     public boolean isPlaced() {
         return placed;
+    }
+
+    public ChunkData getMinChunk() {
+        return minChunk;
     }
 }

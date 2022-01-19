@@ -14,6 +14,7 @@ import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -87,12 +88,14 @@ public class PlayerHandler implements Listener {
 
     @EventHandler
     public void chunkLoading(ChunkLoadEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
         Chunk chunk = event.getChunk();
         ChunkData chunkData = new ChunkData(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
-        Util.logging(chunkData);
         if(NMSSupport.isConflict(chunkData, "")){
             Structure structure = ConfigManager.structureList.get(chunkData);
-            if(!structure.isPlaced() && structure.getMinX() == chunkData.getX() && structure.getMinZ() == chunkData.getZ()){
+            if(!structure.isPlaced() && structure.getMinChunk().equals(chunkData)){
                 structure.place();
             }
         }
@@ -100,6 +103,9 @@ public class PlayerHandler implements Listener {
 
     @EventHandler
     public void disablePortal(PlayerInteractEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
         if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
             if(ItemUtil.isExist(event.getItem()) && event.getItem().getType().equals(Material.ENDER_EYE)){
                 Block block = event.getClickedBlock();

@@ -16,6 +16,10 @@ public record ChunkData(String world, int x, int z) {
         return world;
     }
 
+    public boolean isLoaded() {
+        return CivilizationWorld.getByName(world).get().isChunkLoaded(x, z);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
