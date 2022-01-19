@@ -2,7 +2,9 @@ package com.hirises.civilization.util;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataUnit;
+import com.hirises.core.data.unit.DirDataCache;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.Util;
 import com.sk89q.worldedit.EditSession;
@@ -18,10 +20,17 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.Random;
 
 public class Structure implements DataUnit {
     int minX;
@@ -98,16 +107,46 @@ public class Structure implements DataUnit {
         return type;
     }
 
-    public static void placeStructure(String name){
-        Clipboard clipboard = getStructure(name);
+    public static void randomStructure(CivilizationWorld world, YamlStore yml, DirDataCache<LootTableUnit> lootYml, String rootKey, String rawName){
+        Util.logging("pre get" + System.currentTimeMillis());
+        List<String> variants = yml.getConfig().getStringList(rootKey + ".variants");
+        String name = rawName + variants.get((new Random()).nextInt(variants.size()));
 
-        int width = clipboard.getRegion().getWidth();
-        int length = clipboard.getRegion().getLength();
-        Location location = Civilization.getRandomLocation(width, length,true);
-        Util.logging(width + "//" + length);
-        ConfigManager.addStructure(name, location.getWorld(), location, location.clone().add(width - 1, 0, length - 1));
+
+        Clipboard clipboard = placeStructure(name, world);
+        if(yml.containKey(rootKey + ".loots")){
+            Util.logging("start chest" + System.currentTimeMillis());
+            LootTableUnit lootTable = lootYml.get(yml.get(String.class, rootKey + ".loots"));
+            clipboard.getRegion().forEach(vector3 -> {
+                Block block = convertToLocation(world.get(), vector3).getBlock();
+                if(block.getType().equals(Material.CHEST)){
+                    Util.logging("chest!" + lootTable.getRandomly());
+                    Chest chest = (Chest) block.getState();
+                    chest.getBlockInventory().setContents(lootTable.getRandomly().toArray(new ItemStack[0]));
+                }
+            });
+            Util.logging("end chest" + System.currentTimeMillis());
+        }
+    }
+
+    public static Location convertToLocation(World world, BlockVector3 vector3){
+        return new Location(world, vector3.getBlockX(), vector3.getBlockY(), vector3.getBlockZ());
+    }
+
+    public static Clipboard placeStructure(String name, CivilizationWorld world){
+        Clipboard clipboard = getStructure(name);
+        Util.logging("post get" + System.currentTimeMillis());
+
+        int width = clipboard.getRegion().getWidth() - 1;
+        int length = clipboard.getRegion().getLength() - 1;
+        Location location = Civilization.getRandomLocation(width, length,true, world);
+        Util.logging("post location" + System.currentTimeMillis());
+        ConfigManager.addStructure(name, world.getName(), location, location.clone().add(width - 1, 0, length - 1));
 
         pasteStructure(clipboard, location);
+        Util.logging("post place" + System.currentTimeMillis());
+
+        return clipboard;
     }
 
     private static Clipboard getStructure(String name){

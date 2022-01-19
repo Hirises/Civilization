@@ -68,10 +68,10 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void disablePortal(PlayerInteractEvent event){
         if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
-            if(event.getItem().getType().equals(Material.ENDER_EYE)){
+            if(ItemUtil.isExist(event.getItem()) && event.getItem().getType().equals(Material.ENDER_EYE)){
                 Block block = event.getClickedBlock();
-                if(block.getType().equals(Material.END_PORTAL_FRAME)){
-                    if(!ConfigManager.isConflict(block.getWorld(), block.getLocation(), "crack")){
+                if(block != null && block.getType().equals(Material.END_PORTAL_FRAME)){
+                    if(!ConfigManager.isConflict(block.getWorld().getName(), block.getLocation(), "crack")){
                         event.setCancelled(true);
                     }
                 }
@@ -98,7 +98,7 @@ public class PlayerListener implements Listener {
                 }
             }
             case "world_the_end":{
-                event.getEntity().teleport(Civilization.world_end.getSpawnLocation());
+                event.getEntity().teleport(Civilization.world_end.get().getSpawnLocation());
                 break;
             }
         }
@@ -122,7 +122,7 @@ public class PlayerListener implements Listener {
                 break;
             }
             case "world_the_end":{
-                Location location = Civilization.world_end.getSpawnLocation();
+                Location location = Civilization.world_end.get().getSpawnLocation();
                 setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
                 setBlocks(location, -2, 0, -2, 5, 5, 5, Material.AIR);
                 event.getPlayer().teleport(location);

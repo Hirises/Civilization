@@ -4,12 +4,12 @@ import com.hirises.civilization.command.OPCommand;
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.player.PlayerListener;
+import com.hirises.civilization.util.CivilizationWorld;
 import com.hirises.civilization.util.Structure;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
 import com.hirises.core.store.YamlStore;
-import com.hirises.core.task.CancelableTask;
 import com.hirises.core.util.Util;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -31,11 +31,15 @@ import java.util.stream.Collectors;
 
 public final class Civilization extends JavaPlugin implements Listener {
 
+    public static final String WORLD_NAME = "Civilization";
+    public static final String WORLD_NETHER_NAME = "Civilization_Nether";
+    public static final String WORLD_END_NAME = "Civilization_TheEnd";
+
     private static Civilization plugin;
     private static boolean isStart;
-    public static World world;
-    public static World world_nether;
-    public static World world_end;
+    public static CivilizationWorld world;
+    public static CivilizationWorld world_nether;
+    public static CivilizationWorld world_end;
     public volatile static Boolean onProgress;
 
 
@@ -47,16 +51,16 @@ public final class Civilization extends JavaPlugin implements Listener {
         plugin = this;
         onProgress = false;
 
-        isStart = (new YamlStore(plugin, "state.yml")).get(Boolean.class, "start");
+        isStart = (new YamlStore(plugin, "Saves/state.yml")).get(Boolean.class, "start");
         if(isStart()){
-            WorldCreator creator = new WorldCreator("Civilization");
-            world = Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL));
+            WorldCreator creator = new WorldCreator(WORLD_NAME);
+            world = new CivilizationWorld(Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL)));
 
-            WorldCreator creator_nether = new WorldCreator("Civilization_Nether");
-            world_nether = Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER));
+            WorldCreator creator_nether = new WorldCreator(WORLD_NETHER_NAME);
+            world_nether = new CivilizationWorld(Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER)));
 
-            WorldCreator creator_theEnd = new WorldCreator("Civilization_TheEnd");
-            world_end = Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END));
+            WorldCreator creator_theEnd = new WorldCreator(WORLD_END_NAME);
+            world_end = new CivilizationWorld(Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END)));
         }
 
         ConfigManager.init();
@@ -95,10 +99,10 @@ public final class Civilization extends JavaPlugin implements Listener {
             for(List<Structure> list : ConfigManager.structureList.values()){
                 list.clear();
             }
-            ConfigManager.save.removeKey("자유시장");
-            ConfigManager.save.removeKey("구조물");
-            ConfigManager.save.removeKey("지옥문");
-            ConfigManager.save.save();
+            ConfigManager.data.removeKey("자유시장");
+            ConfigManager.data.removeKey("구조물");
+            ConfigManager.data.removeKey("지옥문");
+            ConfigManager.data.save();
             ConfigManager.cacheStore.removeAll();
             ConfigManager.cacheStore.unloadAll();
             for(String key : ConfigManager.cache.getKeys("")){
@@ -115,37 +119,37 @@ public final class Civilization extends JavaPlugin implements Listener {
 
                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
                 World overWorld = Bukkit.getWorld("world");
-                for(Player player : world.getPlayers()){
+                for(Player player : world.get().getPlayers()){
                     player.teleport(overWorld.getSpawnLocation());
                 }
-                Bukkit.unloadWorld(world, false);
-                for(Player player : world_nether.getPlayers()){
+                Bukkit.unloadWorld(world.get(), false);
+                for(Player player : world_nether.get().getPlayers()){
                     player.teleport(overWorld.getSpawnLocation());
                 }
-                Bukkit.unloadWorld(world_nether, false);
-                for(Player player : world_end.getPlayers()){
+                Bukkit.unloadWorld(world_nether.get(), false);
+                for(Player player : world_end.get().getPlayers()){
                     player.teleport(overWorld.getSpawnLocation());
                 }
-                Bukkit.unloadWorld(world_end, false);
+                Bukkit.unloadWorld(world_end.get(), false);
 
                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드 제거중..."));
                 File file = plugin.getDataFolder();
                 String path = file.getAbsolutePath();
                 path = path.substring(0, path.lastIndexOf("\\"));
                 path = path.substring(0, path.lastIndexOf("\\"));
-                path += "\\Civilization";
+                path += "\\" + world.getName();
                 deleteWalk(Path.of(path));
 
                 path = file.getAbsolutePath();
                 path = path.substring(0, path.lastIndexOf("\\"));
                 path = path.substring(0, path.lastIndexOf("\\"));
-                path += "\\Civilization_Nether";
+                path += "\\" + world_nether.getName();
                 deleteWalk(Path.of(path));
 
                 path = file.getAbsolutePath();
                 path = path.substring(0, path.lastIndexOf("\\"));
                 path = path.substring(0, path.lastIndexOf("\\"));
-                path += "\\Civilization_TheEnd";
+                path += "\\" + world_end.getName();
                 deleteWalk(Path.of(path));
             }
 
@@ -202,97 +206,104 @@ public final class Civilization extends JavaPlugin implements Listener {
             int worldSize = ConfigManager.config.get(Integer.class, "월드지름");
 
             Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "1/3"));
-            WorldCreator creator = new WorldCreator("Civilization");
-            world = Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL));
+            WorldCreator creator = new WorldCreator(WORLD_NAME);
+            world = new CivilizationWorld(Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL)), worldSize);
 
             Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "2/3"));
-                WorldCreator creator_nether = new WorldCreator("Civilization_Nether");
-                world_nether = Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER));
+                WorldCreator creator_nether = new WorldCreator(WORLD_NETHER_NAME);
+                world_nether = new CivilizationWorld(Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER)), (float)worldSize / 8);
 
                 Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                     Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "3/3"));
-                    WorldCreator creator_theEnd = new WorldCreator("Civilization_TheEnd");
-                    world_end = Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END));
+                    WorldCreator creator_theEnd = new WorldCreator(WORLD_END_NAME);
+                    world_end = new CivilizationWorld(Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END)), 1000);
 
                     Map<Player, Location> spawn = new HashMap<>();
                     for(Player player : Bukkit.getOnlinePlayers()){
                         spawn.put(player, getNewSpawnPoint(player, true));
                     }
 
-                    new CancelableTask(Civilization.getInst(), 0 , 60){
-                        int count = 0;
-                        @Override
-                        public void run() {
-                            if(count > 100){
-                                ConfigManager.state.set("start", true);
-                                ConfigManager.state.save();
-                                isStart = true;
-                                Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
-                                for(Player player : spawn.keySet()){
-                                    if(player.isOnline()){
-                                        resetPlayer(player);
-                                        prepareNewPlayer(player);
-                                        player.teleport(spawn.get(player));
-                                    }
-                                }
-                                for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> PlayerListener.inValidWorld(value)).collect(Collectors.toList())){
-                                    resetPlayer(player);
-                                    prepareNewPlayer(player);
-                                    getNewSpawnPoint(player, false);
-                                }
+                    WorldBorder border = world.get().getWorldBorder();
+                    border.setCenter(0, 0);
+                    border.setSize(world.getSize());
 
-                                Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
-                                ConfigManager.cacheStore.checkExistAll();
-                                ConfigManager.cacheStore.saveAll();
-                                ConfigManager.saveStructure();
+                    WorldBorder border_nether = world_nether.get().getWorldBorder();
+                    border_nether.setCenter(0, 0);
+                    border_nether.setSize(world.getSize());
 
-                                Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
-                                cancel();
-                                onProgress = false;
-                                return;
-                            }
+                    WorldBorder border_end = world_end.get().getWorldBorder();
+                    border_end.setCenter(0, 0);
+                    border_end.setSize(world.getSize());
 
-                            Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY + count + "/100"));
-                            if(count == 0){
-                                WorldBorder border = world.getWorldBorder();
-                                border.setCenter(0, 0);
-                                border.setSize(worldSize);
-
-                                WorldBorder border_nether = world_nether.getWorldBorder();
-                                border_nether.setCenter(0, 0);
-                                border_nether.setSize((float)worldSize / 8);
-
-                                WorldBorder border_end = world_end.getWorldBorder();
-                                border_end.setCenter(0, 0);
-                                border_end.setSize(1000);
-                            }
-                            for(String key : ConfigManager.config.getKeys("구조물." + (count / 10))){
-                                if(key.trim().equalsIgnoreCase("")){
-                                    continue;
-                                }
-                                List<String> variants = ConfigManager.config.getConfig().getStringList("구조물." + (count / 10) + "." + key + ".variants");
-                                for(int i = 0; i < ConfigManager.config.get(Integer.class, "구조물." + (count / 10) + "." + key + ".count"); i++){
-                                    Structure.placeStructure(key + variants.get((new Random()).nextInt(variants.size())));
-                                }
-                            }
-                            count += 10;
-                        }
-                    };
+                    genStructure(0, spawn);
                 }, 20);
             }, 20);
         }, 40);
     }
 
-    public static Location getRandomLocation(int dx, int dz, boolean safe){
+    public static void genStructure(int count, Map<Player, Location> spawn){
+        Bukkit.getScheduler().runTaskAsynchronously(Civilization.getInst(), () -> {
+            Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY + (count * 10) + "/100"));
+
+            for(String key : ConfigManager.config.getKeys("구조물." + count)){
+                if(key.trim().equalsIgnoreCase("")){
+                    continue;
+                }
+
+                String rootKey = "구조물." + count + "." + key;
+                CivilizationWorld world = CivilizationWorld.getByName(ConfigManager.config.get(String.class, rootKey + ".world"));
+                Util.logging("startFor" + System.currentTimeMillis());
+                for(int i = 0; i < ConfigManager.config.get(Integer.class, rootKey + ".count"); i++){
+                    Structure.randomStructure(world, ConfigManager.config, ConfigManager.lootTable, rootKey, key);
+                }
+                Util.logging("endFor" + System.currentTimeMillis());
+            }
+
+            if(count >= 10){
+                Bukkit.getScheduler().runTask(Civilization.getInst(), () -> {
+                    ConfigManager.state.set("start", true);
+                    ConfigManager.state.save();
+                    isStart = true;
+                    Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
+                    for(Player player : spawn.keySet()){
+                        if(player.isOnline()){
+                            resetPlayer(player);
+                            prepareNewPlayer(player);
+                            player.teleport(spawn.get(player));
+                        }
+                    }
+                    for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> PlayerListener.inValidWorld(value)).collect(Collectors.toList())){
+                        resetPlayer(player);
+                        prepareNewPlayer(player);
+                        getNewSpawnPoint(player, false);
+                    }
+
+                    Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
+                    ConfigManager.cacheStore.checkExistAll();
+                    ConfigManager.cacheStore.saveAll();
+                    ConfigManager.saveStructure();
+
+                    Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
+                    onProgress = false;
+                    return;
+                });
+                return;
+            }
+
+            genStructure(count + 1, spawn);
+        });
+    }
+
+    public static Location getRandomLocation(int dx, int dz, boolean safe, CivilizationWorld world){
         Location output = null;
         do{
-            output = new Location(world, 0, 0, 0).clone().add(new Random().nextInt((worldBorderRadius * 2) - dx) - worldBorderRadius, 0,
-                    new Random().nextInt((worldBorderRadius * 2) - dz)  - worldBorderRadius);
-        }while (ConfigManager.isConflict(world, output));
+            output = world.getCenter().add(world.getRandom().nextInt((worldBorderRadius * 2) - dx) - worldBorderRadius, 0,
+                    world.getRandom().nextInt((worldBorderRadius * 2) - dz)  - worldBorderRadius);
+        }while (ConfigManager.isConflict(world.getName(), output));
 
         if(safe){
-            output.setY(world.getHighestBlockYAt(output.getBlockX(), output.getBlockZ(), HeightMap.MOTION_BLOCKING_NO_LEAVES));
+            output.setY(world.get().getHighestBlockYAt(output.getBlockX(), output.getBlockZ(), HeightMap.MOTION_BLOCKING_NO_LEAVES));
             output.add(0, 1, 0);
             while (output.getBlock().getType().equals(Material.POWDER_SNOW)){
                 output.add(0, 1, 0);
@@ -303,22 +314,22 @@ public final class Civilization extends JavaPlugin implements Listener {
     }
 
     public static Location getNewSpawnPoint(Player player, boolean asynchronous){
-        Location spawn = getRandomLocation(1, 1, true);
+        Location spawn = getRandomLocation(1, 1, true, world);
 
         spawn.clone().add(0, -1, 0).getBlock().setType(Material.BEDROCK);
         spawn.clone().getBlock().setType(Material.AIR);
         spawn.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
 
-        spawn.setWorld(world);
+        spawn.setWorld(world.get());
         spawn.add(0.5, 0, 0.5);
         if (asynchronous) {
-            world.loadChunk(spawn.getChunk());
+            world.get().loadChunk(spawn.getChunk());
         }else{
             player.teleport(spawn);
         }
         player.setBedSpawnLocation(spawn, true);
         ConfigManager.getCache(player.getUniqueId()).setSpawn(spawn);
-        ConfigManager.addStructure("spawn", world, spawn, spawn);
+        ConfigManager.addStructure("spawn", world.getName(), spawn, spawn);
 
         return spawn;
     }

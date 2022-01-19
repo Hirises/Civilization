@@ -86,7 +86,7 @@ public class NetherPortal {
         if(to.equalsIgnoreCase("Civilization")){
             findX = location.getBlockX() * 8;
             findZ = location.getBlockZ() * 8;
-            world = Civilization.world;
+            world = Civilization.world.get();
             spawnY = (location.getBlockY() *  3) - 64;
             if(spawnY <= -54){  //월드 아래로 나가는거 방지
                 spawnY = -54 + 1;
@@ -98,7 +98,7 @@ public class NetherPortal {
         }else{
             findX = location.getBlockX() / 8;
             findZ = location.getBlockZ() / 8;
-            world = Civilization.world_nether;
+            world = Civilization.world_nether.get();
             spawnY = (location.getBlockY() + 64) / 3 ;
             if(spawnY <= 10){  //월드 아래로 나가는거 방지
                 spawnY = 10 + 1;
@@ -122,11 +122,12 @@ public class NetherPortal {
         }
 
         //지옥문 찾기
+        final String prefix = "지옥문." + to + ".";
         for(int curX = -findRange; curX <= findRange; curX++){
             for(int curZ = -findRange; curZ <= findRange; curZ++){
-                final String path = "지옥문." + to + "." + (findX + curX) + "/" + (findZ + curZ);
-                if(ConfigManager.save.containKey(path)){
-                    out = ConfigManager.save.getConfig().getLocation(path);
+                final String path = prefix + (findX + curX) + "/" + (findZ + curZ);
+                if(ConfigManager.data.containKey(path)){
+                    out = ConfigManager.data.getConfig().getLocation(path);
                     return out;
                 }
             }
@@ -145,9 +146,9 @@ public class NetherPortal {
         }
 
         //생성한거 저장
-        ConfigManager.save.getConfig().set("지옥문." + location.getWorld().getName() + "." + location.getBlockX() + "/" + location.getBlockZ(), cur);
-        ConfigManager.save.getConfig().set("지옥문." + to + "." + findX + "/" + findZ, spawn);
-        ConfigManager.save.save();
+        ConfigManager.data.getConfig().set("지옥문." + location.getWorld().getName() + "." + location.getBlockX() + "/" + location.getBlockZ(), cur);
+        ConfigManager.data.getConfig().set("지옥문." + to + "." + findX + "/" + findZ, spawn);
+        ConfigManager.data.save();
 
         return spawn;
     }

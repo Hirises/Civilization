@@ -9,38 +9,43 @@
   '0':
     crack:
       count: 1
+      world: 'Civilization'
+      loots: 'crack'
       variants:
         - '1'
-        - '2'
-        - '3'
   '1':
-    ruins:
+    ruin:
       count: 10
+      world: 'Civilization'
+      loots: 'ruin'
       variants:
         - '1'
         - '2'
-        - '3'
   '2':
     altar:
       count: 4
+      world: 'Civilization'
       variants:
         - '1'
-        - '2'
-        - '3'
   '3':
     lode:
       count: 10
+      world: 'Civilization'
+      loots: 'lode'
       variants:
         - '1'
-        - '2'
-        - '3'
   '4':
     portal:
-      count: 4
+      count: 2
+      world: 'Civilization'
       variants:
         - '1'
+  '5':
+    portal:
+      count: 2
+      world: 'Civilization'
+      variants:
         - '2'
-        - '3'
 초반무적:
   시간: 0
   분: 5

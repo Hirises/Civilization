@@ -6,7 +6,9 @@ import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.util.Structure;
 import com.hirises.core.data.GUIShapeUnit;
 import com.hirises.core.data.ItemStackUnit;
+import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataCache;
+import com.hirises.core.data.unit.DirDataCache;
 import com.hirises.core.store.PlayerCacheStore;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
@@ -16,20 +18,20 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.File;
 import java.util.*;
 
 public class ConfigManager {
-    public static YamlStore state = new YamlStore(Civilization.getInst(), "state.yml");
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
     public static int killRange;
-    public static YamlStore cache = new YamlStore(Civilization.getInst(), "cache.yml");
-    public static YamlStore save = new YamlStore(Civilization.getInst(), "save.yml");
-    public static List<FreeShopItemUnit> shopItem = new ArrayList<>();
-    public static final Map<String, List<Structure>> structureList = new HashMap<>();
-
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
     public static PlayerCacheStore<PlayerCache> cacheStore;
+
+    public static YamlStore cache = new YamlStore(Civilization.getInst(), "Saves/cache.yml");
+    public static YamlStore data = new YamlStore(Civilization.getInst(), "Saves/data.yml");
+    public static YamlStore state = new YamlStore(Civilization.getInst(), "Saves/state.yml");
+    public static DirDataCache lootTable = new DirDataCache(Civilization.getInst(), "Schematics", LootTableUnit::new);
+    public static List<FreeShopItemUnit> shopItem = new ArrayList<>();
+    public static final Map<String, List<Structure>> structureList = new HashMap<>();
 
     private static ItemStack moneyItem;
 
@@ -37,17 +39,18 @@ public class ConfigManager {
         state.load(true);
         config.load(true);
         cache.load(true);
-        save.load(true);
+        data.load(true);
+        lootTable.load();
         killRange = config.get(Integer.class, "현상금.범위");
-        for(String key : save.getKeys("자유시장")){
-            shopItem.add(save.getOrDefault(new FreeShopItemUnit(), "자유시장." + key));
+        for(String key : data.getKeys("자유시장")){
+            shopItem.add(data.getOrDefault(new FreeShopItemUnit(), "자유시장." + key));
         }
         structureList.put("Civilization", new ArrayList<>());
         structureList.put("Civilization_Nether", new ArrayList<>());
         structureList.put("Civilization_TheEnd", new ArrayList<>());
-        for(String key : save.getKeys("구조물")){
-            String world = save.get(String.class, "구조물." + key + ".world");
-            structureList.get(world).add(save.getOrDefault(new Structure(), "구조물." + key));
+        for(String key : data.getKeys("구조물")){
+            String world = data.get(String.class, "구조물." + key + ".world");
+            structureList.get(world).add(data.getOrDefault(new Structure(), "구조물." + key));
         }
 
         menu.load();
@@ -56,11 +59,6 @@ public class ConfigManager {
         cacheStore.checkExistAll();
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
-
-        File file = new File(Civilization.getInst().getDataFolder().getAbsolutePath() + "/Schematics/");
-        if(!file.exists()){
-            file.mkdirs();
-        }
     }
 
     public static PlayerCache getCache(UUID uuid){
@@ -72,10 +70,10 @@ public class ConfigManager {
     }
 
     public static void saveShopItem(){
-        save.removeKey("자유시장");
+        data.removeKey("자유시장");
         int i = 0;
         for(FreeShopItemUnit item : shopItem){
-            save.upsert(item, "자유시장." + i);
+            data.upsert(item, "자유시장." + i);
             i++;
         }
     }
@@ -84,23 +82,23 @@ public class ConfigManager {
         int i = 0;
         for(String world : structureList.keySet()){
             for(Structure structure : structureList.get(world)){
-                save.upsert(structure, "구조물." + i);
+                data.upsert(structure, "구조물." + i);
                 i++;
             }
         }
-        save.save();
+        data.save();
     }
 
-    public static void addStructure(String type, World world, Location loc1, Location loc2){
-        structureList.get(world.getName()).add(new Structure(type, world.getName(), loc1, loc2));
+    public static void addStructure(String type, String world, Location loc1, Location loc2){
+        structureList.get(world).add(new Structure(type, world, loc1, loc2));
     }
 
-    public static boolean isConflict(World world, BlockVector3 vector3){
-        return isConflict(world, new Location(world, vector3.getBlockX(), vector3.getBlockY(), vector3.getBlockZ()));
+    public static boolean isConflict(String world, BlockVector3 vector3){
+        return isConflict(world, new Location(Civilization.world.get(), vector3.getBlockX(), vector3.getBlockY(), vector3.getBlockZ()));
     }
 
-    public static boolean isConflict(World world, Location location){
-        for(Structure structure : structureList.get(world.getName())){
+    public static boolean isConflict(String world, Location location){
+        for(Structure structure : structureList.get(world)){
             int x = location.getBlockX();
             int z = location.getBlockZ();
 
@@ -111,8 +109,8 @@ public class ConfigManager {
         return false;
     }
 
-    public static boolean isConflict(World world, Location location, String type){
-        for(Structure structure : structureList.get(world.getName())){
+    public static boolean isConflict(String world, Location location, String type){
+        for(Structure structure : structureList.get(world)){
             if(structure.getType().startsWith(type)){
                 int x = location.getBlockX();
                 int z = location.getBlockZ();
