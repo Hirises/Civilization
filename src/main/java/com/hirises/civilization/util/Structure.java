@@ -147,9 +147,7 @@ public class Structure implements DataUnit {
         Region region = clipboard.getRegion();
         int width = region.getWidth() - 1;
         int length = region.getLength() - 1;
-        Util.logging("------- pre location" + System.currentTimeMillis());
         Location location = Civilization.getRandomLocation(width, length,true, world);
-        Util.logging("------- post location" + System.currentTimeMillis());
         ConfigManager.addStructure(name, world.getName(), location, location.clone().add(width - 1, 0, length - 1));
 
         pasteStructure(clipboard, location);

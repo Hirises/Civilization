@@ -110,7 +110,7 @@ public final class Civilization extends JavaPlugin implements Listener {
             }
             onProgress = true;
 
-            Util.broadcast(new TextComponent(ChatColor.DARK_RED + "--------------------   주의!   --------------------"));
+            Util.broadcast(new TextComponent(ChatColor.DARK_RED + "---------------------   주의!   ---------------------"));
             Util.broadcast(new TextComponent(ChatColor.DARK_RED + "진행중 서버를 종료하지 마세요. 치명적인 오류가 발생할 수 있습니다."));
             Util.broadcast(new TextComponent(ChatColor.DARK_RED + "--------------------------------------------------"));
             Util.broadcast(new TextComponent(ChatColor.RED + "게임을 초기화합니다..."));
@@ -200,7 +200,7 @@ public final class Civilization extends JavaPlugin implements Listener {
             }
             onProgress = true;
 
-            Util.broadcast(new TextComponent(ChatColor.DARK_RED + "--------------------   주의!   --------------------"));
+            Util.broadcast(new TextComponent(ChatColor.DARK_RED + "---------------------   주의!   ---------------------"));
             Util.broadcast(new TextComponent(ChatColor.DARK_RED + "진행중 서버를 종료하지 마세요. 치명적인 오류가 발생할 수 있습니다."));
             Util.broadcast(new TextComponent(ChatColor.DARK_RED + "--------------------------------------------------"));
             Util.broadcast(new TextComponent(ChatColor.RED + "새로운 게임을 시작합니다..."));
@@ -299,10 +299,8 @@ public final class Civilization extends JavaPlugin implements Listener {
     public static Location getRandomLocation(int dx, int dz, boolean safe, CivilizationWorld world){
         Location output = null;
         do{
-            Util.logging("startGetRandom" + System.currentTimeMillis());
             output = world.getCenter().add(world.getRandom().nextInt((worldBorderRadius * 2) - dx) - worldBorderRadius, 0,
                     world.getRandom().nextInt((worldBorderRadius * 2) - dz)  - worldBorderRadius);
-            Util.logging("endGetRandom" + System.currentTimeMillis());
         }while (ConfigManager.isConflict(world.getName(), output));
 
         if(safe){
@@ -312,7 +310,6 @@ public final class Civilization extends JavaPlugin implements Listener {
                 output.add(0, -1, 0);
             }
             output.add(0, 1, 0);
-            Util.logging("checkTime = " + (System.currentTimeMillis() - time));
         }
 
         return output;

@@ -97,13 +97,10 @@ public class ConfigManager {
     }
 
     public static boolean isConflict(String world, Location location){
-        Util.logging("startConflictCheck" + System.currentTimeMillis());
         ChunkData chunk = new ChunkData(world, location.getBlockX() / 16, location.getBlockY() / 16);
         if(structureList.containsKey(chunk)){
-            Util.logging("endConflictCheck" + System.currentTimeMillis());
             return true;
         }
-        Util.logging("endConflictCheck" + System.currentTimeMillis());
         return false;
     }
 
