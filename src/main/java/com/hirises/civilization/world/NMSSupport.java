@@ -1,7 +1,10 @@
-package com.hirises.civilization.util;
+package com.hirises.civilization.world;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.data.ChunkData;
+import com.hirises.civilization.data.CivilizationWorld;
+import com.hirises.civilization.data.Structure;
 import com.hirises.core.util.Pair;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;

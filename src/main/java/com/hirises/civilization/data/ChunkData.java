@@ -1,4 +1,4 @@
-package com.hirises.civilization.util;
+package com.hirises.civilization.data;
 
 import java.util.Objects;
 

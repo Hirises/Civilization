@@ -1,4 +1,4 @@
-package com.hirises.civilization.util;
+package com.hirises.civilization.data;
 
 import com.hirises.civilization.Civilization;
 import org.bukkit.Location;

@@ -1,4 +1,5 @@
-package com.hirises.civilization.util;
+package com.hirises.civilization.data;
+import com.hirises.civilization.world.NMSSupport;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.Pair;

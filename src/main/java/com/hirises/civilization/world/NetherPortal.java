@@ -1,4 +1,4 @@
-package com.hirises.civilization.util;
+package com.hirises.civilization.world;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;

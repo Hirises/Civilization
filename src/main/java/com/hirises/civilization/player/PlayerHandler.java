@@ -5,17 +5,15 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
-import com.hirises.civilization.util.ChunkData;
-import com.hirises.civilization.util.NMSSupport;
-import com.hirises.civilization.util.NetherPortal;
-import com.hirises.civilization.util.Structure;
+import com.hirises.civilization.data.ChunkData;
+import com.hirises.civilization.world.NMSSupport;
+import com.hirises.civilization.world.NetherPortal;
+import com.hirises.civilization.data.Structure;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Pair;
-import com.hirises.core.util.Util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -84,58 +82,6 @@ public class PlayerHandler implements Listener {
                 player.teleport(Bukkit.getWorld("world").getSpawnLocation());
             }
         }
-    }
-
-    @EventHandler
-    public void chunkLoading(ChunkLoadEvent event){
-        if(!Civilization.isStart()){
-            return;
-        }
-        Chunk chunk = event.getChunk();
-        ChunkData chunkData = new ChunkData(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
-        if(NMSSupport.isConflict(chunkData, "")){
-            Structure structure = ConfigManager.structureList.get(chunkData);
-            if(!structure.isPlaced() && structure.getMinChunk().equals(chunkData)){
-                structure.place();
-            }
-        }
-    }
-
-    @EventHandler
-    public void disablePortal(PlayerInteractEvent event){
-        if(!Civilization.isStart()){
-            return;
-        }
-        if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
-            if(ItemUtil.isExist(event.getItem()) && event.getItem().getType().equals(Material.ENDER_EYE)){
-                Block block = event.getClickedBlock();
-                if(block != null && block.getType().equals(Material.END_PORTAL_FRAME)){
-                    if(!NMSSupport.isConflict(block.getWorld().getName(), block.getLocation(), "crack")){
-                        event.setCancelled(true);
-                    }
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onPortal(EntityPortalEvent event){
-        if(!Civilization.isStart()){
-            return;
-        }
-        event.setCancelled(true);
-
-        runPortal(event.getEntity(), event.getFrom(), event.getTo().getWorld().getName());
-    }
-
-    @EventHandler
-    public void onPortal(PlayerPortalEvent event){
-        if(!Civilization.isStart()){
-            return;
-        }
-        event.setCancelled(true);
-
-        runPortal(event.getPlayer(), event.getFrom(), event.getTo().getWorld().getName());
     }
 
     @EventHandler
@@ -232,26 +178,6 @@ public class PlayerHandler implements Listener {
             player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, invincibleTime, 2, false, false, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, invincibleTime, 9, false, false, true));
         }, 1);
-    }
-
-    private static void runPortal(Entity entity, Location from, String targetWorld){
-        switch (targetWorld){
-            case "world_nether":{
-                if(from.getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
-                    entity.teleport(NetherPortal.getPortal(Civilization.world.getName(), from));
-                }else{
-                    entity.teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), from));
-                }
-                break;
-            }
-            case "world_the_end":{
-                Location location = Civilization.world_end.get().getSpawnLocation();
-                NMSSupport.setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
-                NMSSupport.setBlocks(location, -2, 0, -2, 5, 5, 5, Material.AIR);
-                entity.teleport(location);
-                break;
-            }
-        }
     }
 
     //endregion

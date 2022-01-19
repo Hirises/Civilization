@@ -4,8 +4,9 @@ import com.hirises.civilization.command.OPCommand;
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.player.PlayerHandler;
-import com.hirises.civilization.util.CivilizationWorld;
-import com.hirises.civilization.util.NMSSupport;
+import com.hirises.civilization.data.CivilizationWorld;
+import com.hirises.civilization.world.NMSSupport;
+import com.hirises.civilization.world.WorldListener;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
@@ -14,7 +15,6 @@ import com.hirises.core.util.Util;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class Civilization extends JavaPlugin implements Listener {
+public final class Civilization extends JavaPlugin{
 
     public static final String WORLD_NAME = "Civilization";
     public static final String WORLD_NETHER_NAME = "Civilization_Nether";
@@ -67,7 +67,7 @@ public final class Civilization extends JavaPlugin implements Listener {
         getCommand("money").setExecutor(new UserCommand());
         getCommand("civilization").setExecutor(new OPCommand());
 
-        Bukkit.getPluginManager().registerEvents(plugin, plugin);
+        Bukkit.getPluginManager().registerEvents(new WorldListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerHandler(), plugin);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
