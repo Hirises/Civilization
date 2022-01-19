@@ -217,65 +217,59 @@ public final class Civilization extends JavaPlugin implements Listener {
                     border_end.setCenter(0, 0);
                     border_end.setSize(world.getSize());
 
-                    genStructure(spawn);
+                    Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... "));
+                    Bukkit.getScheduler().runTaskLaterAsynchronously(Civilization.getInst(), () -> {
+                        genStructure(spawn);
+                    }, 3 * 20);
+
+                    Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
+                        ConfigManager.state.set("start", true);
+                        ConfigManager.state.save();
+                        isStart = true;
+                        Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
+                        for(Player player : spawn.keySet()){
+                            if(player.isOnline()){
+                                resetPlayer(player);
+                                prepareNewPlayer(player);
+                                player.teleport(spawn.get(player));
+                            }
+                        }
+                        for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> NMSSupport.inValidWorld(value)).collect(Collectors.toList())){
+                            resetPlayer(player);
+                            prepareNewPlayer(player);
+                            getNewSpawnPoint(player, false);
+                        }
+
+                        Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
+                        ConfigManager.cacheStore.checkExistAll();
+                        ConfigManager.cacheStore.saveAll();
+                        ConfigManager.saveStructure();
+
+                        Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
+                        onProgress = false;
+                        return;
+                    }, 10 * 20 + 3 * 20);
                 }, 20);
             }, 20);
         }, 40);
     }
 
     public static void genStructure(Map<Player, Location> spawn){
-        Bukkit.getScheduler().runTaskAsynchronously(Civilization.getInst(), () -> {
-            Set<String> keys = ConfigManager.config.getKeys("구조물");
-            int outer = 0;
-            for(String key : keys){
-                if(key.trim().equalsIgnoreCase("")){
-                    continue;
-                }
-
-                String rootKey = "구조물." + key;
-                CivilizationWorld world = CivilizationWorld.getByName(ConfigManager.config.get(String.class, rootKey + ".world"));
-                int repeat = ConfigManager.config.get(Integer.class, rootKey + ".count");
-                int inner = 0;
-                for(int i = 0; i < repeat; i++){
-                    Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY +
-                            outer + "/" + keys.size() + ChatColor.DARK_GRAY + "(" + inner++ + "/" + repeat + ")"));
-
-                    List<String> variants = ConfigManager.config.getConfig().getStringList(rootKey + ".variants");
-                    String name = key + variants.get((new Random()).nextInt(variants.size()));
-                    NMSSupport.lazyPlaceStructure(world, name);
-                }
-                outer++;
+        Set<String> keys = ConfigManager.config.getKeys("구조물");
+        for(String key : keys){
+            if(key.trim().equalsIgnoreCase("")){
+                continue;
             }
 
-            Bukkit.getScheduler().runTask(Civilization.getInst(), () -> {
-                ConfigManager.state.set("start", true);
-                ConfigManager.state.save();
-                isStart = true;
-                Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
-                for(Player player : spawn.keySet()){
-                    if(player.isOnline()){
-                        resetPlayer(player);
-                        prepareNewPlayer(player);
-                        player.teleport(spawn.get(player));
-                    }
-                }
-                for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> NMSSupport.inValidWorld(value)).collect(Collectors.toList())){
-                    resetPlayer(player);
-                    prepareNewPlayer(player);
-                    getNewSpawnPoint(player, false);
-                }
-
-                Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
-                ConfigManager.cacheStore.checkExistAll();
-                ConfigManager.cacheStore.saveAll();
-                ConfigManager.saveStructure();
-
-                Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
-                onProgress = false;
-                return;
-            });
-            return;
-        });
+            String rootKey = "구조물." + key;
+            CivilizationWorld world = CivilizationWorld.getByName(ConfigManager.config.get(String.class, rootKey + ".world"));
+            int repeat = ConfigManager.config.get(Integer.class, rootKey + ".count");
+            for(int i = 0; i < repeat; i++){
+                List<String> variants = ConfigManager.config.getConfig().getStringList(rootKey + ".variants");
+                String name = key + variants.get((new Random()).nextInt(variants.size()));
+                NMSSupport.lazyPlaceStructure(world, name);
+            }
+        }
     }
 
     public static Location getNewSpawnPoint(Player player, boolean asynchronous){

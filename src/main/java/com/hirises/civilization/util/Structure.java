@@ -42,19 +42,22 @@ public class Structure implements DataUnit {
     public void place(){
         World world = CivilizationWorld.getByName(this.world).get();
         int y = world.getHighestBlockYAt(minX, minZ, HeightMap.MOTION_BLOCKING_NO_LEAVES);
+        y += 1;
         NMSSupport.pasteStructure(NMSSupport.getStructure(type), new Location(world, minX - 1, y, minZ - 1));
         placed = true;
     }
 
     @Override
     public void load(YamlStore yml, String root) {
-        minX = yml.get(Integer.class, root + ".minX");
-        minZ = yml.get(Integer.class, root + ".minZ");
-        maxX = yml.get(Integer.class, root + ".maxX");
-        maxZ = yml.get(Integer.class, root + ".maxZ");
-        world = yml.get(String.class, root + ".world");
-        type = yml.get(String.class, root + ".type");
-        placed = yml.get(Boolean.class, root + ".placed");
+        this.minX = yml.get(Integer.class, root + ".minX");
+        this.minZ = yml.get(Integer.class, root + ".minZ");
+        this.maxX = yml.get(Integer.class, root + ".maxX");
+        this.maxZ = yml.get(Integer.class, root + ".maxZ");
+        this.world = yml.get(String.class, root + ".world");
+        this.type = yml.get(String.class, root + ".type");
+        this.placed = yml.get(Boolean.class, root + ".placed");
+        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(minX, minZ);
+        this.minChunk = new ChunkData(world, chunkPos.getLeft(), chunkPos.getRight());
     }
 
     @Override
