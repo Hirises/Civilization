@@ -7,6 +7,7 @@ import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.world.NMSSupport;
 import com.hirises.civilization.world.WorldListener;
+import com.hirises.core.data.AlertUnit;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
@@ -28,12 +29,15 @@ import java.util.stream.Collectors;
 
 public final class Civilization extends JavaPlugin{
 
+    //region fields
+
     public static final String WORLD_NAME = "Civilization";
     public static final String WORLD_NETHER_NAME = "Civilization_Nether";
     public static final String WORLD_END_NAME = "Civilization_TheEnd";
 
     private static Civilization plugin;
     private static boolean isStart;
+    private static boolean isFinish;
     public static CivilizationWorld world;
     public static CivilizationWorld world_nether;
     public static CivilizationWorld world_end;
@@ -41,25 +45,41 @@ public final class Civilization extends JavaPlugin{
 
     public static int worldBorderRadius;
 
+    //endregion
+
+    //region overrides
+
     @Override
     public void onEnable() {
         // Plugin startup logic
         plugin = this;
         onProgress = false;
 
-        isStart = (new YamlStore(plugin, "Saves/state.yml")).get(Boolean.class, "start");
-        if(isStart()){
-            WorldCreator creator = new WorldCreator(WORLD_NAME);
-            world = new CivilizationWorld(Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL)));
+        try{
+            isStart = (new YamlStore(plugin, "Saves/state.yml")).get(Boolean.class, "start");
+            isFinish = (new YamlStore(plugin, "Saves/state.yml")).get(Boolean.class, "finish");
+            if(isStart()){
+                WorldCreator creator = new WorldCreator(WORLD_NAME);
+                world = new CivilizationWorld(Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL)));
 
-            WorldCreator creator_nether = new WorldCreator(WORLD_NETHER_NAME);
-            world_nether = new CivilizationWorld(Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER)));
+                WorldCreator creator_nether = new WorldCreator(WORLD_NETHER_NAME);
+                world_nether = new CivilizationWorld(Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER)));
 
-            WorldCreator creator_theEnd = new WorldCreator(WORLD_END_NAME);
-            world_end = new CivilizationWorld(Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END)));
+                WorldCreator creator_theEnd = new WorldCreator(WORLD_END_NAME);
+                world_end = new CivilizationWorld(Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END)));
+            }
+
+            ConfigManager.init();
+        }catch (IllegalArgumentException | ExceptionInInitializerError e){
+            Util.logging(ChatColor.RED + "---------------------   경고!   ---------------------");
+            Util.logging(ChatColor.DARK_RED + "플러그인을 로드하는 도중 오류가 발생하였습니다.");
+            Util.logging(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Saves 폴더와 " +
+                    "Civilization, Civilization_Nether, Civilization_TheEnd 폴더를 전부 삭제하신 후 다시 시도해보세요.");
+            Util.logging(ChatColor.DARK_RED + "해당 현상이 반복되면 서버를 다시 생성해주세요");
+            Util.logging(ChatColor.RED + "--------------------------------------------------");
+            e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(plugin);
         }
-
-        ConfigManager.init();
 
         worldBorderRadius = ConfigManager.config.get(Integer.class, "월드지름") / 2;
 
@@ -79,9 +99,32 @@ public final class Civilization extends JavaPlugin{
         }, 5 * 60 * 20, 5 * 60 * 20);
     }
 
-    public static boolean isStart() {
-        return isStart;
+    @Override
+    public void onDisable() {
+        // Plugin shutdown logic
+        try{
+            for(Player player : Bukkit.getOnlinePlayers()){
+                GUIGetEvent event = new GUIGetEvent(player.getUniqueId());
+                Bukkit.getPluginManager().callEvent(event);
+                if(event.getTopGUI() != null){
+                    event.getTopGUI().closeAll();
+                }
+            }
+            ConfigManager.save();
+        }catch (IllegalArgumentException | ExceptionInInitializerError e) {
+            Util.logging(ChatColor.RED + "---------------------   경고!   ---------------------");
+            Util.logging(ChatColor.DARK_RED + "플러그인을 저장하는 도중 오류가 발생하였습니다.");
+            Util.logging(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Saves 폴더와 " +
+                    "Civilization, Civilization_Nether, Civilization_TheEnd 폴더를 전부 삭제하신 후 다시 시도해보세요.");
+            Util.logging(ChatColor.DARK_RED + "해당 현상이 반복되면 서버를 다시 생성해주세요");
+            Util.logging(ChatColor.RED + "--------------------------------------------------");
+            e.printStackTrace();
+        }
     }
+
+    //endregion
+
+    //region GameControl
 
     public static void resetGame(){
         Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
@@ -153,22 +196,13 @@ public final class Civilization extends JavaPlugin{
             Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
             isStart = false;
             ConfigManager.state.set("start", false);
+            ConfigManager.state.set("finish", false);
             ConfigManager.state.save();
 
             Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
 
             onProgress = false;
         }, 20);
-    }
-
-    public static void resetPlayer(Player player){
-        ConfigManager.cacheStore.remove(player);
-        ConfigManager.cacheStore.unload(player);
-        for(PotionEffectType effect : PotionEffectType.values()){
-            player.removePotionEffect(effect);
-        }
-        player.getInventory().clear();
-        player.setLevel(0);
     }
 
     public static void startGame() {
@@ -224,6 +258,7 @@ public final class Civilization extends JavaPlugin{
 
                     Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                         ConfigManager.state.set("start", true);
+                        ConfigManager.state.set("finish", false);
                         ConfigManager.state.save();
                         isStart = true;
                         Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 이동시킵니다..."));
@@ -243,7 +278,7 @@ public final class Civilization extends JavaPlugin{
                         Util.broadcast(new TextComponent(ChatColor.YELLOW + "마무리 중..."));
                         ConfigManager.cacheStore.checkExistAll();
                         ConfigManager.cacheStore.saveAll();
-                        ConfigManager.saveStructure();
+                        ConfigManager.saveStructures();
 
                         Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
                         onProgress = false;
@@ -253,6 +288,20 @@ public final class Civilization extends JavaPlugin{
             }, 20);
         }, 40);
     }
+
+    public static void endGame(UUID winner){
+        isFinish = true;
+        ConfigManager.state.set("finish", true);
+        ConfigManager.state.save();
+
+        AlertUnit winnerAlert = ConfigManager.config.getOrDefault(new AlertUnit(), "승리");
+        String name = Bukkit.getOfflinePlayer(winner).getName();
+        for(Player player : Bukkit.getOnlinePlayers()){
+            winnerAlert.play(player, Util.toRemap("winner", name));
+        }
+    }
+
+    //endregion
 
     public static void genStructure(Map<Player, Location> spawn){
         Set<String> keys = ConfigManager.config.getKeys("구조물");
@@ -270,6 +319,16 @@ public final class Civilization extends JavaPlugin{
                 NMSSupport.lazyPlaceStructure(world, name);
             }
         }
+    }
+
+    public static void resetPlayer(Player player){
+        ConfigManager.cacheStore.remove(player);
+        ConfigManager.cacheStore.unload(player);
+        for(PotionEffectType effect : PotionEffectType.values()){
+            player.removePotionEffect(effect);
+        }
+        player.getInventory().clear();
+        player.setLevel(0);
     }
 
     public static Location getNewSpawnPoint(Player player, boolean asynchronous){
@@ -309,25 +368,6 @@ public final class Civilization extends JavaPlugin{
         PlayerHandler.updateScoreBoard(player);
     }
 
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-        for(Player player : Bukkit.getOnlinePlayers()){
-            GUIGetEvent event = new GUIGetEvent(player.getUniqueId());
-            Bukkit.getPluginManager().callEvent(event);
-            if(event.getTopGUI() != null){
-                event.getTopGUI().closeAll();
-            }
-        }
-        ConfigManager.saveShopItem();
-        ConfigManager.cacheStore.saveAll();
-        ConfigManager.saveStructure();
-    }
-
-    public static Civilization getInst() {
-        return plugin;
-    }
-
     private static void deleteWalk(Path path){
         try {
             Files.walk(path).forEach(p -> {
@@ -345,5 +385,21 @@ public final class Civilization extends JavaPlugin{
         }
         File f = path.toFile();
         f.delete();
+    }
+
+    public static Civilization getInst() {
+        return plugin;
+    }
+
+    public static boolean isStart() {
+        return isStart;
+    }
+
+    public static boolean isFinish(){
+        return isFinish;
+    }
+
+    public static boolean isRunning(){
+        return isStart && !isFinish;
     }
 }

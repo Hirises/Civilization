@@ -5,26 +5,18 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
-import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.world.NMSSupport;
-import com.hirises.civilization.world.NetherPortal;
-import com.hirises.civilization.data.Structure;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -67,7 +59,7 @@ public class PlayerHandler implements Listener {
                 Civilization.getNewSpawnPoint(player, false);
                 ConfigManager.cacheStore.save(player);
                 ConfigManager.cache.save();
-                ConfigManager.saveStructure();
+                ConfigManager.saveStructures();
             }else{
                 //그냥 입장시
                 Objective board = ScoreBoardHandler.getOrNew(player);

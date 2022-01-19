@@ -6,6 +6,7 @@ import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.world.NMSSupport;
 import com.hirises.civilization.data.Structure;
+import com.hirises.civilization.world.WorldListener;
 import com.hirises.core.data.GUIShapeUnit;
 import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.LootTableUnit;
@@ -56,6 +57,16 @@ public class ConfigManager {
         cacheStore.checkExistAll();
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
+
+        String uuid = state.get(String.class, "lastHitEnderDragon");
+        WorldListener.LastHitEnderDragon = uuid.trim().equalsIgnoreCase("") ? null : UUID.fromString(uuid);
+    }
+
+    public static void save(){
+        saveShopItem();
+        cacheStore.saveAll();
+        saveStructures();
+        state.set("lastHitEnderDragon", WorldListener.LastHitEnderDragon.toString());
     }
 
     public static Structure addStructure(String type, String world, Location loc1, Location loc2){
@@ -95,7 +106,7 @@ public class ConfigManager {
         }
     }
 
-    public static void saveStructure(){
+    public static void saveStructures(){
         int i = 0;
         for(Structure structure : structureList.values()){
             data.upsert(structure, "구조물." + i);

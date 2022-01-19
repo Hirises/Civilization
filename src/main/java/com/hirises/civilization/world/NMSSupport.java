@@ -181,4 +181,8 @@ public final class NMSSupport {
             }
         }
     }
+
+    public static void spawnFireWorks(Location location){
+
+    }
 }
