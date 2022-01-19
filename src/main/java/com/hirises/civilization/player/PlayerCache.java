@@ -63,7 +63,7 @@ public class PlayerCache implements IPlayerCache {
 
     public void setMoney(long money) {
         this.money = money;
-        PlayerListener.updateScoreBoard(uuid);
+        PlayerHandler.updateScoreBoard(uuid);
     }
 
     public int getKill() {

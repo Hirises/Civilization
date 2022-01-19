@@ -59,6 +59,24 @@ public class ConfigManager {
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
     }
 
+    public static void addStructure(String type, String world, Location loc1, Location loc2){
+        addStructure(type, world, loc1, loc2, false);
+    }
+    public static void addStructure(String type, String world, Location loc1, Location loc2, boolean placed){
+        addStructure(new Structure(type, world, loc1, loc2, placed));
+    }
+
+    public static void addStructure(Structure structure){
+        Pair<Integer, Integer> minChunkPos = NMSSupport.toChunk(structure.getMinX(), structure.getMinZ());
+        Pair<Integer, Integer> maxChunkPos = NMSSupport.toChunk(structure.getMaxX(), structure.getMaxZ());
+
+        for(int x = minChunkPos.getLeft(); x <= maxChunkPos.getLeft(); x++){
+            for(int z = minChunkPos.getRight(); z <= maxChunkPos.getRight(); z++){
+                structureList.put(new ChunkData(structure.getWorld(), x, z), structure);
+            }
+        }
+    }
+
     public static PlayerCache getCache(UUID uuid){
         return cacheStore.get(uuid);
     }
@@ -83,63 +101,5 @@ public class ConfigManager {
             i++;
         }
         data.save();
-    }
-
-    public static void addStructure(String type, String world, Location loc1, Location loc2){
-        addStructure(type, world, loc1, loc2, false);
-    }
-    public static void addStructure(String type, String world, Location loc1, Location loc2, boolean placed){
-        addStructure(new Structure(type, world, loc1, loc2, placed));
-    }
-
-    public static void addStructure(Structure structure){
-        Pair<Integer, Integer> minChunkPos = NMSSupport.toChunk(structure.getMinX(), structure.getMinZ());
-        Pair<Integer, Integer> maxChunkPos = NMSSupport.toChunk(structure.getMaxX(), structure.getMaxZ());
-
-        for(int x = minChunkPos.getLeft(); x <= maxChunkPos.getLeft(); x++){
-            for(int z = minChunkPos.getRight(); z <= maxChunkPos.getRight(); z++){
-                structureList.put(new ChunkData(structure.getWorld(), x, z), structure);
-            }
-        }
-    }
-
-    public static boolean isConflict(String world, BlockVector3 vector3, String type){
-        ChunkData chunk = NMSSupport.toChunkData(world, vector3);
-        if(structureList.containsKey(chunk)){
-            if(structureList.get(chunk).getType().startsWith(type)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean isConflict(String world, Location location, String type){
-        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(location.getX(), location.getZ());
-        ChunkData chunk = new ChunkData(world, chunkPos.getLeft(), chunkPos.getRight());
-        if(structureList.containsKey(chunk)){
-            if(structureList.get(chunk).getType().startsWith(type)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean isConflict(Location location, String type){
-        ChunkData chunk = NMSSupport.toChunkData(location);
-        if(structureList.containsKey(chunk)){
-            if(structureList.get(chunk).getType().startsWith(type)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean isConflict(ChunkData chunk, String type){
-        if(structureList.containsKey(chunk)){
-            if(structureList.get(chunk).getType().startsWith(type)){
-                return true;
-            }
-        }
-        return false;
     }
 }

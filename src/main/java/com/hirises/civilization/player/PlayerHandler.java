@@ -6,6 +6,7 @@ import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
 import com.hirises.civilization.util.ChunkData;
+import com.hirises.civilization.util.NMSSupport;
 import com.hirises.civilization.util.NetherPortal;
 import com.hirises.civilization.util.Structure;
 import com.hirises.core.data.TimeUnit;
@@ -16,6 +17,7 @@ import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -32,13 +34,34 @@ import org.bukkit.scoreboard.Objective;
 import java.util.Random;
 import java.util.UUID;
 
-public class PlayerListener implements Listener {
+public class PlayerHandler implements Listener {
+
+    //region method
+
+    public static void updateScoreBoard(UUID uuid){
+        Player player = Bukkit.getPlayer(uuid);
+        if(player != null){
+            updateScoreBoard(player);
+        }
+    }
+
+    public static void updateScoreBoard(Player player){
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        Objective board = ScoreBoardHandler.getOrNew(player);
+        ScoreBoardHandler.setLine(board, 0, "돈: " + cache.getMoney());
+        ScoreBoardHandler.show(player, board);
+    }
+
+    //endregion
+
+    //region events
+
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
 
         if(Civilization.isStart()){
-            if(player.getWorld() == null || inValidWorld(player)){
+            if(player.getWorld() == null || NMSSupport.inValidWorld(player)){
                 //새로 입장시
                 Civilization.resetPlayer(player);
                 Civilization.prepareNewPlayer(player);
@@ -67,17 +90,12 @@ public class PlayerListener implements Listener {
         Chunk chunk = event.getChunk();
         ChunkData chunkData = new ChunkData(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
         Util.logging(chunkData);
-        if(ConfigManager.isConflict(chunkData, "")){
+        if(NMSSupport.isConflict(chunkData, "")){
             Structure structure = ConfigManager.structureList.get(chunkData);
             if(!structure.isPlaced() && structure.getMinX() == chunkData.getX() && structure.getMinZ() == chunkData.getZ()){
                 structure.place();
             }
         }
-    }
-
-    public static boolean inValidWorld(Player player){
-        World world = player.getWorld();
-        return !Civilization.world.get().equals(world) && !Civilization.world_nether.get().equals(world) && !Civilization.world_end.get().equals(world);
     }
 
     @EventHandler
@@ -86,7 +104,7 @@ public class PlayerListener implements Listener {
             if(ItemUtil.isExist(event.getItem()) && event.getItem().getType().equals(Material.ENDER_EYE)){
                 Block block = event.getClickedBlock();
                 if(block != null && block.getType().equals(Material.END_PORTAL_FRAME)){
-                    if(!ConfigManager.isConflict(block.getWorld().getName(), block.getLocation(), "crack")){
+                    if(!NMSSupport.isConflict(block.getWorld().getName(), block.getLocation(), "crack")){
                         event.setCancelled(true);
                     }
                 }
@@ -100,23 +118,8 @@ public class PlayerListener implements Listener {
             return;
         }
         event.setCancelled(true);
-        switch (event.getTo().getWorld().getName()){
-            case "world_nether":{
-                if(event.getFrom().getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
-                    event.getEntity().teleport(NetherPortal.getPortal(Civilization.world.getName(), event.getFrom()));
-                }else{
-                    event.getEntity().teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), event.getFrom()));
-                }
-                break;
-            }
-            case "world_the_end":{
-                Location location = Civilization.world_end.get().getSpawnLocation();
-                setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
-                setBlocks(location, -2, 0, -2, 5, 5, 5, Material.AIR);
-                event.getEntity().teleport(location);
-                break;
-            }
-        }
+
+        runPortal(event.getEntity(), event.getFrom(), event.getTo().getWorld().getName());
     }
 
     @EventHandler
@@ -125,51 +128,12 @@ public class PlayerListener implements Listener {
             return;
         }
         event.setCancelled(true);
-        switch (event.getTo().getWorld().getName()){
-            case "world_nether":{
-                if(event.getFrom().getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
-                    event.getPlayer().teleport(NetherPortal.getPortal(Civilization.world.getName(), event.getFrom()));
-                }else{
-                    event.getPlayer().teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), event.getFrom()));
-                }
-                break;
-            }
-            case "world_the_end":{
-                Location location = Civilization.world_end.get().getSpawnLocation();
-                setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
-                setBlocks(location, -2, 0, -2, 5, 5, 5, Material.AIR);
-                event.getPlayer().teleport(location);
-                break;
-            }
-        }
-    }
 
-    private static void setBlocks(Location location, int x, int y, int z, int dx, int dy, int dz, Material material){
-        for(int curX = x; curX < x + dx; curX++){
-            for(int curY = y; curY < y + dy; curY++){
-                for(int curZ = z; curZ < z + dz; curZ++){
-                    location.clone().add(curX, curY, curZ).getBlock().setType(material);
-                }
-            }
-        }
-    }
-
-   public static void updateScoreBoard(UUID uuid){
-        Player player = Bukkit.getPlayer(uuid);
-        if(player != null){
-            updateScoreBoard(player);
-        }
-    }
-
-    public static void updateScoreBoard(Player player){
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-        Objective board = ScoreBoardHandler.getOrNew(player);
-        ScoreBoardHandler.setLine(board, 0, "돈: " + cache.getMoney());
-        ScoreBoardHandler.show(player, board);
+        runPortal(event.getPlayer(), event.getFrom(), event.getTo().getWorld().getName());
     }
 
     @EventHandler
-    public void onInteract(PlayerInteractEvent event){
+    public void useMoneyItem(PlayerInteractEvent event){
         if(!Civilization.isStart()){
             return;
         }
@@ -184,7 +148,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onShift_F(PlayerSwapHandItemsEvent event){
+    public void openQuickMenu(PlayerSwapHandItemsEvent event){
         if(!Civilization.isStart()){
             return;
         }
@@ -263,4 +227,26 @@ public class PlayerListener implements Listener {
             player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, invincibleTime, 9, false, false, true));
         }, 1);
     }
+
+    private static void runPortal(Entity entity, Location from, String targetWorld){
+        switch (targetWorld){
+            case "world_nether":{
+                if(from.getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
+                    entity.teleport(NetherPortal.getPortal(Civilization.world.getName(), from));
+                }else{
+                    entity.teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), from));
+                }
+                break;
+            }
+            case "world_the_end":{
+                Location location = Civilization.world_end.get().getSpawnLocation();
+                NMSSupport.setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
+                NMSSupport.setBlocks(location, -2, 0, -2, 5, 5, 5, Material.AIR);
+                entity.teleport(location);
+                break;
+            }
+        }
+    }
+
+    //endregion
 }

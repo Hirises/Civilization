@@ -3,7 +3,7 @@ package com.hirises.civilization;
 import com.hirises.civilization.command.OPCommand;
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
-import com.hirises.civilization.player.PlayerListener;
+import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.util.CivilizationWorld;
 import com.hirises.civilization.util.NMSSupport;
 import com.hirises.core.data.TimeUnit;
@@ -40,26 +40,6 @@ public final class Civilization extends JavaPlugin implements Listener {
     public volatile static Boolean onProgress;
 
     public static int worldBorderRadius;
-    public static final Set<Material> SPAWN_BLOCK_SET = Collections.unmodifiableSet(Arrays.asList(
-            Material.AIR,
-            Material.ACACIA_LEAVES,
-            Material.AZALEA_LEAVES,
-            Material.BIRCH_LEAVES,
-            Material.DARK_OAK_LEAVES,
-            Material.FLOWERING_AZALEA_LEAVES,
-            Material.JUNGLE_LEAVES,
-            Material.OAK_LEAVES,
-            Material.SPRUCE_LEAVES,
-            Material.TALL_GRASS,
-            Material.LARGE_FERN,
-            Material.LILAC,
-            Material.SUNFLOWER,
-            Material.ROSE_BUSH,
-            Material.PEONY,
-            Material.SUGAR_CANE,
-            Material.BAMBOO,
-            Material.SNOW
-    ).stream().collect(Collectors.toSet()));
 
     @Override
     public void onEnable() {
@@ -88,7 +68,7 @@ public final class Civilization extends JavaPlugin implements Listener {
         getCommand("civilization").setExecutor(new OPCommand());
 
         Bukkit.getPluginManager().registerEvents(plugin, plugin);
-        Bukkit.getPluginManager().registerEvents(new PlayerListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new PlayerHandler(), plugin);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             if(!isStart()){
@@ -279,7 +259,7 @@ public final class Civilization extends JavaPlugin implements Listener {
                         player.teleport(spawn.get(player));
                     }
                 }
-                for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> PlayerListener.inValidWorld(value)).collect(Collectors.toList())){
+                for(Player player : Bukkit.getOnlinePlayers().stream().filter(value -> NMSSupport.inValidWorld(value)).collect(Collectors.toList())){
                     resetPlayer(player);
                     prepareNewPlayer(player);
                     getNewSpawnPoint(player, false);
@@ -298,27 +278,8 @@ public final class Civilization extends JavaPlugin implements Listener {
         });
     }
 
-    public static Location getRandomLocation(int dx, int dz, boolean safe, CivilizationWorld world){
-        Location output = null;
-        do{
-            output = world.getCenter().add(world.getRandom().nextInt((worldBorderRadius * 2) - dx) - worldBorderRadius, 0,
-                    world.getRandom().nextInt((worldBorderRadius * 2) - dz)  - worldBorderRadius);
-        }while (ConfigManager.isConflict(output, ""));
-
-        if(safe){
-            long time = System.currentTimeMillis();
-            output.setY(257);
-            while (SPAWN_BLOCK_SET.contains(output.getBlock().getType())){
-                output.add(0, -1, 0);
-            }
-            output.add(0, 1, 0);
-        }
-
-        return output;
-    }
-
     public static Location getNewSpawnPoint(Player player, boolean asynchronous){
-        Location spawn = getRandomLocation(1, 1, true, world);
+        Location spawn = NMSSupport.getRandomLocation(world, 1, 1, true);
 
         spawn.clone().add(0, -1, 0).getBlock().setType(Material.BEDROCK);
         spawn.clone().getBlock().setType(Material.AIR);
@@ -351,7 +312,7 @@ public final class Civilization extends JavaPlugin implements Listener {
         Objective board = ScoreBoardHandler.getOrNew(player);
         board.setDisplayName("Civilization");
         ScoreBoardHandler.show(player, board);
-        PlayerListener.updateScoreBoard(player);
+        PlayerHandler.updateScoreBoard(player);
     }
 
     @Override
