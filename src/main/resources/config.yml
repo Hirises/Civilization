@@ -6,46 +6,40 @@
 사망골드: -10000
 월드지름: 5000
 구조물:
-  '0':
-    crack:
-      count: 1
-      world: 'Civilization'
-      loots: 'crack'
-      variants:
-        - '1'
-  '1':
-    ruin:
-      count: 10
-      world: 'Civilization'
-      loots: 'ruin'
-      variants:
-        - '1'
-        - '2'
-  '2':
-    altar:
-      count: 4
-      world: 'Civilization'
-      variants:
-        - '1'
-  '3':
-    lode:
-      count: 10
-      world: 'Civilization'
-      loots: 'lode'
-      variants:
-        - '1'
-  '4':
-    portal:
-      count: 2
-      world: 'Civilization'
-      variants:
-        - '1'
-  '5':
-    portal:
-      count: 2
-      world: 'Civilization'
-      variants:
-        - '2'
+  crack:
+    count: 1
+    world: 'Civilization'
+    loots: 'crack'
+    variants:
+      - '1'
+  ruin:
+    count: 10
+    world: 'Civilization'
+    loots: 'ruin'
+    variants:
+      - '1'
+      - '2'
+  altar:
+    count: 4
+    world: 'Civilization'
+    variants:
+      - '1'
+  lode:
+    count: 10
+    world: 'Civilization'
+    loots: 'lode'
+    variants:
+      - '1'
+  portal1:
+    count: 2
+    world: 'Civilization'
+    variants:
+      - ''
+  portal2:
+    count: 2
+    world: 'Civilization'
+    variants:
+      - ''
 초반무적:
   시간: 0
   분: 5

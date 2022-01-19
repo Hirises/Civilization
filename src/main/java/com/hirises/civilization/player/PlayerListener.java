@@ -11,6 +11,7 @@ import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,6 +36,11 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
+        Civilization.getRandomLocation(10, 10, true, Civilization.world);
+        Bukkit.getScheduler().runTaskLaterAsynchronously(Civilization.getInst(), () -> {
+            Civilization.getRandomLocation(10, 10, true, Civilization.world);
+        }, 20);
+
         if(Civilization.isStart()){
             if(player.getWorld() == null || inValidWorld(player)){
                 //새로 입장시
@@ -62,7 +68,7 @@ public class PlayerListener implements Listener {
 
     public static boolean inValidWorld(Player player){
         World world = player.getWorld();
-        return !Civilization.world.equals(world) && !Civilization.world_nether.equals(world) && !Civilization.world_end.equals(world);
+        return !Civilization.world.get().equals(world) && !Civilization.world_nether.get().equals(world) && !Civilization.world_end.get().equals(world);
     }
 
     @EventHandler
