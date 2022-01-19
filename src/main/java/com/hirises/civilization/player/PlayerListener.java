@@ -5,17 +5,16 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
 import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
+import com.hirises.civilization.util.ChunkData;
 import com.hirises.civilization.util.NetherPortal;
+import com.hirises.civilization.util.Structure;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Util;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,6 +23,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -36,10 +36,6 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
-        Civilization.getRandomLocation(10, 10, true, Civilization.world);
-        Bukkit.getScheduler().runTaskLaterAsynchronously(Civilization.getInst(), () -> {
-            Civilization.getRandomLocation(10, 10, true, Civilization.world);
-        }, 20);
 
         if(Civilization.isStart()){
             if(player.getWorld() == null || inValidWorld(player)){
@@ -62,6 +58,19 @@ public class PlayerListener implements Listener {
             if(player.getWorld() == null){  //예전 데이터 남아있으면
                 Civilization.resetPlayer(player);
                 player.teleport(Bukkit.getWorld("world").getSpawnLocation());
+            }
+        }
+    }
+
+    @EventHandler
+    public void chunkLoading(ChunkLoadEvent event){
+        Chunk chunk = event.getChunk();
+        ChunkData chunkData = new ChunkData(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
+        Util.logging(chunkData);
+        if(ConfigManager.isConflict(chunkData, "")){
+            Structure structure = ConfigManager.structureList.get(chunkData);
+            if(!structure.isPlaced() && structure.getMinX() == chunkData.getX() && structure.getMinZ() == chunkData.getZ()){
+                structure.place();
             }
         }
     }

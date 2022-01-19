@@ -4,6 +4,7 @@ import com.hirises.civilization.Civilization;
 import com.hirises.civilization.gui.FreeShopItemUnit;
 import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.util.ChunkData;
+import com.hirises.civilization.util.NMSSupport;
 import com.hirises.civilization.util.Structure;
 import com.hirises.core.data.GUIShapeUnit;
 import com.hirises.core.data.ItemStackUnit;
@@ -13,6 +14,7 @@ import com.hirises.core.data.unit.DirDataCache;
 import com.hirises.core.store.PlayerCacheStore;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.Location;
@@ -46,8 +48,7 @@ public class ConfigManager {
             shopItem.add(data.getOrDefault(new FreeShopItemUnit(), "자유시장." + key));
         }
         for(String key : data.getKeys("구조물")){
-            String world = data.get(String.class, "구조물." + key + ".world");
-            data.getOrDefault(new Structure(), "구조물." + key).add(structureList);
+            addStructure(data.getOrDefault(new Structure(), "구조물." + key));
         }
 
         menu.load();
@@ -85,27 +86,55 @@ public class ConfigManager {
     }
 
     public static void addStructure(String type, String world, Location loc1, Location loc2){
-        new Structure(type, world, loc1, loc2).add(structureList);
+        addStructure(type, world, loc1, loc2, false);
+    }
+    public static void addStructure(String type, String world, Location loc1, Location loc2, boolean placed){
+        addStructure(new Structure(type, world, loc1, loc2, placed));
     }
 
-    public static boolean isConflict(String world, BlockVector3 vector3){
-        ChunkData chunk = new ChunkData(world, vector3.getBlockX() / 16, vector3.getBlockY() / 16);
-        if(structureList.containsKey(chunk)){
-            return true;
+    public static void addStructure(Structure structure){
+        Pair<Integer, Integer> minChunkPos = NMSSupport.toChunk(structure.getMinX(), structure.getMinZ());
+        Pair<Integer, Integer> maxChunkPos = NMSSupport.toChunk(structure.getMaxX(), structure.getMaxZ());
+
+        for(int x = minChunkPos.getLeft(); x <= maxChunkPos.getLeft(); x++){
+            for(int z = minChunkPos.getRight(); z <= maxChunkPos.getRight(); z++){
+                structureList.put(new ChunkData(structure.getWorld(), x, z), structure);
+            }
         }
-        return false;
     }
 
-    public static boolean isConflict(String world, Location location){
-        ChunkData chunk = new ChunkData(world, location.getBlockX() / 16, location.getBlockY() / 16);
+    public static boolean isConflict(String world, BlockVector3 vector3, String type){
+        ChunkData chunk = NMSSupport.toChunkData(world, vector3);
         if(structureList.containsKey(chunk)){
-            return true;
+            if(structureList.get(chunk).getType().startsWith(type)){
+                return true;
+            }
         }
         return false;
     }
 
     public static boolean isConflict(String world, Location location, String type){
-        ChunkData chunk = new ChunkData(world, location.getBlockX() / 16, location.getBlockY() / 16);
+        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(location.getX(), location.getZ());
+        ChunkData chunk = new ChunkData(world, chunkPos.getLeft(), chunkPos.getRight());
+        if(structureList.containsKey(chunk)){
+            if(structureList.get(chunk).getType().startsWith(type)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isConflict(Location location, String type){
+        ChunkData chunk = NMSSupport.toChunkData(location);
+        if(structureList.containsKey(chunk)){
+            if(structureList.get(chunk).getType().startsWith(type)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isConflict(ChunkData chunk, String type){
         if(structureList.containsKey(chunk)){
             if(structureList.get(chunk).getType().startsWith(type)){
                 return true;

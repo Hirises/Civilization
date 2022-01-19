@@ -5,7 +5,7 @@ import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.player.PlayerListener;
 import com.hirises.civilization.util.CivilizationWorld;
-import com.hirises.civilization.util.Structure;
+import com.hirises.civilization.util.NMSSupport;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
@@ -244,7 +244,6 @@ public final class Civilization extends JavaPlugin implements Listener {
     }
 
     public static void genStructure(Map<Player, Location> spawn){
-        int count = 0;
         Bukkit.getScheduler().runTaskAsynchronously(Civilization.getInst(), () -> {
             Set<String> keys = ConfigManager.config.getKeys("구조물");
             int outer = 0;
@@ -260,7 +259,10 @@ public final class Civilization extends JavaPlugin implements Listener {
                 for(int i = 0; i < repeat; i++){
                     Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 초기화합니다... " + ChatColor.GRAY +
                             outer + "/" + keys.size() + ChatColor.DARK_GRAY + "(" + inner++ + "/" + repeat + ")"));
-                    Structure.randomStructure(world, ConfigManager.config, ConfigManager.lootTable, rootKey, key);
+
+                    List<String> variants = ConfigManager.config.getConfig().getStringList(rootKey + ".variants");
+                    String name = key + variants.get((new Random()).nextInt(variants.size()));
+                    NMSSupport.lazyPlaceStructure(world, name);
                 }
                 outer++;
             }
@@ -301,7 +303,7 @@ public final class Civilization extends JavaPlugin implements Listener {
         do{
             output = world.getCenter().add(world.getRandom().nextInt((worldBorderRadius * 2) - dx) - worldBorderRadius, 0,
                     world.getRandom().nextInt((worldBorderRadius * 2) - dz)  - worldBorderRadius);
-        }while (ConfigManager.isConflict(world.getName(), output));
+        }while (ConfigManager.isConflict(output, ""));
 
         if(safe){
             long time = System.currentTimeMillis();
@@ -331,7 +333,7 @@ public final class Civilization extends JavaPlugin implements Listener {
         }
         player.setBedSpawnLocation(spawn, true);
         ConfigManager.getCache(player.getUniqueId()).setSpawn(spawn);
-        ConfigManager.addStructure("spawn", world.getName(), spawn, spawn);
+        ConfigManager.addStructure("spawn", world.getName(), spawn.clone().add(0, -1, 0), spawn.clone().add(0, 1, 0), true);
 
         return spawn;
     }
