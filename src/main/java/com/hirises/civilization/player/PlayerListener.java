@@ -94,17 +94,17 @@ public class PlayerListener implements Listener {
         switch (event.getTo().getWorld().getName()){
             case "world_nether":{
                 if(event.getFrom().getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
-                    NetherPortal portal = new NetherPortal(Civilization.world.getName(), event.getFrom());
-                    event.getEntity().teleport(portal.getTo());
-                    break;
+                    event.getEntity().teleport(NetherPortal.getPortal(Civilization.world.getName(), event.getFrom()));
                 }else{
-                    NetherPortal portal = new NetherPortal(Civilization.world_nether.getName(), event.getFrom());
-                    event.getEntity().teleport(portal.getTo());
-                    break;
+                    event.getEntity().teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), event.getFrom()));
                 }
+                break;
             }
             case "world_the_end":{
-                event.getEntity().teleport(Civilization.world_end.get().getSpawnLocation());
+                Location location = Civilization.world_end.get().getSpawnLocation();
+                setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
+                setBlocks(location, -2, 0, -2, 5, 5, 5, Material.AIR);
+                event.getEntity().teleport(location);
                 break;
             }
         }
@@ -117,14 +117,12 @@ public class PlayerListener implements Listener {
         }
         event.setCancelled(true);
         switch (event.getTo().getWorld().getName()){
-            case "world":{
-                NetherPortal portal = new NetherPortal(Civilization.world.getName(), event.getFrom());
-                event.getPlayer().teleport(portal.getTo());
-                break;
-            }
             case "world_nether":{
-                NetherPortal portal = new NetherPortal(Civilization.world_nether.getName(), event.getFrom());
-                event.getPlayer().teleport(portal.getTo());
+                if(event.getFrom().getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
+                    event.getPlayer().teleport(NetherPortal.getPortal(Civilization.world.getName(), event.getFrom()));
+                }else{
+                    event.getPlayer().teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), event.getFrom()));
+                }
                 break;
             }
             case "world_the_end":{

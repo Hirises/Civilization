@@ -9,34 +9,33 @@ import org.bukkit.World;
 import org.bukkit.block.data.Orientable;
 
 public class NetherPortal {
-    Direction direction;
-    Location corner;
-    Location to;
 
     private enum Direction{
         X,
         Z;
     }
 
-    public NetherPortal(String to, Location location){
+    public static Location getPortal(String to, Location location){
+        Direction direction;
+        Location corner;
         if(isPortalBlock(location)){
             if(isPortalBlock(location.clone().add(-1, 0 ,0)) || isPortalBlock(location.clone().add(1, 0 ,0))){
-                this.direction = Direction.X;
+                direction = Direction.X;
             }else{
-                this.direction = Direction.Z;
+                direction = Direction.Z;
             }
         }else{
             if(isPortalBlock(location.clone().add(-1, 0 ,0))){
-                this.direction = Direction.Z;
+                direction = Direction.Z;
                 location.add(-1, 0, 0);
             }else if(isPortalBlock(location.clone().add(1, 0 ,0))){
-                this.direction = Direction.Z;
+                direction = Direction.Z;
                 location.add(1, 0, 0);
             }else if(isPortalBlock(location.clone().add(0, 0 ,1))){
-                this.direction = Direction.X;
+                direction = Direction.X;
                 location.add(0, 0, 1);
             }else{
-                this.direction = Direction.X;
+                direction = Direction.X;
                 location.add(0, 0, -1);
             }
         }
@@ -50,7 +49,7 @@ public class NetherPortal {
         corner.setX(corner.getBlockX());
         corner.setY(corner.getBlockY());
         corner.setZ(corner.getBlockZ());
-        this.to = findTwin(to, direction, corner);
+        return findTwin(to, direction, corner);
     }
 
     private static boolean isPortalBlock(Location location){
@@ -231,9 +230,5 @@ public class NetherPortal {
         Orientable orientable = (Orientable) location.clone().add(x, y, z).getBlock().getBlockData();
         orientable.setAxis(Axis.Z);
         location.clone().add(x, y, z).getBlock().setBlockData(orientable);
-    }
-
-    public Location getTo() {
-        return to;
     }
 }
