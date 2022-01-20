@@ -1,5 +1,6 @@
 package com.hirises.civilization.player;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
@@ -7,14 +8,20 @@ import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
 import com.hirises.civilization.world.NMSSupport;
 import com.hirises.core.data.TimeUnit;
+import com.hirises.core.display.Display;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Util;
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -83,11 +90,44 @@ public class PlayerHandler implements Listener {
         Player player = event.getPlayer();
         if(player.isSprinting()){
             PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-            if(cache.getStamina() <= 0){
-                player.setSprinting(false);
-            }else{
-                cache.operateStamina(ConfigManager.runStamina);
-            }
+            cache.operateStamina(ConfigManager.runStamina);
+        }
+    }
+
+    @EventHandler
+    public void jump(PlayerJumpEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Player player = event.getPlayer();
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        cache.operateStamina(ConfigManager.jumpStamina);
+    }
+
+    @EventHandler
+    public void mining(BlockBreakEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Player player = event.getPlayer();
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        cache.operateStamina(ConfigManager.miningStamina);
+    }
+
+    @EventHandler
+    public void attackAndDealt(EntityDamageByEntityEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Entity damager = event.getDamager();
+        Entity taker = event.getEntity();
+        if(damager instanceof Player){
+            PlayerCache cache = ConfigManager.getCache(damager.getUniqueId());
+            cache.operateStamina(ConfigManager.attackStamina);
+        }
+        if(taker instanceof Player){
+            PlayerCache cache = ConfigManager.getCache(taker.getUniqueId());
+            cache.operateStamina(ConfigManager.hitStamina);
         }
     }
 

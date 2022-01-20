@@ -1,5 +1,6 @@
 package com.hirises.civilization.player;
 
+import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.display.Display;
 import com.hirises.core.store.IPlayerCache;
@@ -7,6 +8,8 @@ import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +20,7 @@ public class PlayerCache implements IPlayerCache {
     private int kill;
     private Location spawn;
     private int stamina;
+    private Player player;
 
     public PlayerCache(UUID uuid){
         this.uuid = uuid;
@@ -29,6 +33,7 @@ public class PlayerCache implements IPlayerCache {
         this.money = ConfigManager.cache.getOrDefault(Long.class, defaultMoney, uuid.toString() + ".돈");
         this.kill = ConfigManager.cache.getOrDefault(Integer.class, 0, uuid.toString() + ".킬");
         this.stamina = ConfigManager.cache.getOrDefault(Integer.class, ConfigManager.defaultStamina, uuid.toString() + ".스테미나");
+        this.player = Bukkit.getPlayer(uuid);
     }
 
     @Override
@@ -114,9 +119,23 @@ public class PlayerCache implements IPlayerCache {
             stamina = ConfigManager.defaultStamina;
         }
         this.stamina = stamina;
-        Player player = Bukkit.getPlayer(uuid);
         if(player != null){
-            Display.sendDisplayUnit(player, ConfigManager.staminaActionBar, Util.toRemap("amount", String.valueOf(stamina)));
+            Display.sendDisplayUnit(player, ConfigManager.staminaActionBar, Util.toRemap("amount", String.valueOf(getStamina())));
+
+            if(this.stamina <= ConfigManager.debuff2Stamina){
+                Bukkit.getScheduler().runTask(Civilization.getInst(), () -> {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 1, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 30, 1, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 30, 1, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 30, 1, false, false, true));
+                });
+            }else if(this.stamina <= ConfigManager.debuff1Stamina){
+                Bukkit.getScheduler().runTask(Civilization.getInst(), () -> {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 0, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 30, 0, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 30, 0, false, false, true));
+                });
+            }
         }
     }
 

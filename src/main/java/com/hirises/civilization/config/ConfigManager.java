@@ -46,7 +46,10 @@ public class ConfigManager {
     public static int jumpStamina;
     public static int attackStamina;
     public static int hitStamina;
+    public static int miningStamina;
     public static int healStamina;
+    public static int debuff1Stamina;
+    public static int debuff2Stamina;
     public static ActionBarUnit staminaActionBar;
 
     public static void init(){
@@ -90,7 +93,10 @@ public class ConfigManager {
         jumpStamina = config.get(Integer.class, "스테미나.점프");
         attackStamina = config.get(Integer.class, "스테미나.공격");
         hitStamina = config.get(Integer.class, "스테미나.데미지");
+        miningStamina = config.get(Integer.class, "스테미나.채광");
         healStamina = config.get(Integer.class, "스테미나.초당회복");
+        debuff1Stamina = config.get(Integer.class, "스테미나.디버프1");
+        debuff2Stamina = config.get(Integer.class, "스테미나.디버프2");
         staminaActionBar = config.getOrDefault(new ActionBarUnit(), "스테미나.엑션바");
     }
 

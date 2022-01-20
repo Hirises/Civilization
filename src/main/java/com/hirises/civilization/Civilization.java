@@ -5,6 +5,7 @@ import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.Structure;
 import com.hirises.civilization.data.StructureInfo;
+import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.world.NMSSupport;
@@ -13,6 +14,7 @@ import com.hirises.civilization.world.WorldListener;
 import com.hirises.core.data.AlertUnit;
 import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.TimeUnit;
+import com.hirises.core.display.Display;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.task.CancelableTask;
@@ -110,9 +112,10 @@ public final class Civilization extends JavaPlugin{
                 return;
             }
             for(Player player : Bukkit.getOnlinePlayers()){
-                ConfigManager.getCache(player.getUniqueId()).operateStamina(ConfigManager.healStamina);
+                PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+                cache.operateStamina(ConfigManager.healStamina);
             }
-        }, 5 * 60 * 20, 5 * 60 * 20);
+        }, 20, 20);
     }
 
     @Override
