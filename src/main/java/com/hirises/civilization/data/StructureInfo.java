@@ -4,7 +4,6 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
-import com.sk89q.worldedit.math.Vector3;
 
 import java.util.List;
 import java.util.Random;
@@ -52,7 +51,7 @@ public class StructureInfo implements DataUnit {
             int x = yml.get(Integer.class, rootKey + ".offset.point.x");
             int y = yml.get(Integer.class, rootKey + ".offset.point.y");
             int z = yml.get(Integer.class, rootKey + ".offset.point.z");
-            this.pointOffset = Vector3.at(x, y, z);
+            this.pointOffset = new Vector3(x, y, z);
         }else{
             this.pointOffset = defaultPointOffset;
         }
@@ -60,7 +59,7 @@ public class StructureInfo implements DataUnit {
             int x = yml.get(Integer.class, rootKey + ".offset.center.x");
             int y = yml.get(Integer.class, rootKey + ".offset.center.y");
             int z = yml.get(Integer.class, rootKey + ".offset.center.z");
-            this.centerOffset = Vector3.at(x, y, z);
+            this.centerOffset = new Vector3(x, y, z);
         }else{
             this.centerOffset = defaultCenterOffset;
         }

@@ -8,7 +8,7 @@
 offset:
   point:  #월드에딧 카피할때 기준점 때문에 생긴 offset
     x: -1
-    y: 0
+    y: 1
     z: -1
   center:   #실제 설치할 때 중심 맞추기 위한 offset
     x: -4

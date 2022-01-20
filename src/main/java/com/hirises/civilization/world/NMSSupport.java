@@ -2,10 +2,7 @@ package com.hirises.civilization.world;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
-import com.hirises.civilization.data.ChunkData;
-import com.hirises.civilization.data.CivilizationWorld;
-import com.hirises.civilization.data.Structure;
-import com.hirises.civilization.data.StructureInfo;
+import com.hirises.civilization.data.*;
 import com.hirises.core.util.Pair;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -18,7 +15,6 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import org.bukkit.*;
@@ -108,7 +104,7 @@ public final class NMSSupport {
         //offset
         Vector3 offset = data.getCenterOffset();
         Structure structure = ConfigManager.addStructure(data, location.clone().add(offset.getX(), offset.getY(), offset.getZ()),
-                location.clone().add(width + offset.getX() - 1, height + offset.getY() - 1, length + offset.getZ() - 1), false);
+                location.clone().add(width + offset.getX() - 1, offset.getY(), length + offset.getZ() - 1), false);
         if(structure.getMinChunk().isLoaded()){
             structure.place();
         }
@@ -123,7 +119,9 @@ public final class NMSSupport {
         int length = region.getLength();
         int height = region.getHeight();
         //offset
-        Structure structure = ConfigManager.addStructure(data, location, location.clone().add(width - 1, height - 1, length - 1), false);
+        Vector3 offset = data.getCenterOffset();
+        Structure structure = ConfigManager.addStructure(data, location.clone().add(offset.getX(), offset.getY(), offset.getZ()),
+                location.clone().add(width + offset.getX() - 1, height + offset.getY() - 1, length + offset.getZ() - 1), false);
         if(structure.getMinChunk().isLoaded()){
             structure.place();
         }

@@ -6,7 +6,6 @@ import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.Pair;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.math.Vector3;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -57,7 +56,9 @@ public class Structure implements DataUnit {
         y += 1;
         Clipboard clipboard = NMSSupport.getStructure(getType());
         Vector3 offset = info.getPointOffset();
-        Location place = new Location(world, minX + offset.getX(), y  + offset.getY(), minZ  + offset.getZ());
+        Location place = new Location(world, minX + offset.getX(), y  + offset.getY() + info.getCenterOffset().getY(), minZ  + offset.getZ());
+        this.minY = y - offset.getY() + info.getCenterOffset().getY();
+        this.maxY = this.minY + clipboard.getRegion().getHeight() - 1;
         NMSSupport.pasteStructure(clipboard, place);
 
         if(info.getLoots() != null){
