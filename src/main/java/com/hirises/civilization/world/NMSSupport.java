@@ -5,6 +5,7 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.data.Structure;
+import com.hirises.civilization.data.StructureData;
 import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import com.sk89q.worldedit.EditSession;
@@ -91,14 +92,15 @@ public final class NMSSupport {
         return output;
     }
 
-    public static void lazyPlaceStructure(CivilizationWorld world, String type){
-        Clipboard clipboard = getStructure(type);
+    public static void lazyPlaceStructure(StructureData data){
+        String name = data.getRandomName();
+        Clipboard clipboard = getStructure(name);
 
         Region region = clipboard.getRegion();
         int width = region.getWidth() - 1;
         int length = region.getLength() - 1;
-        Location location = getRandomLocation(world, width, length,false);
-        Structure structure = ConfigManager.addStructure(type, world.getName(), location, location.clone().add(width - 1, 0, length - 1));
+        Location location = getRandomLocation(data.getWorld(), width, length,false);
+        Structure structure = ConfigManager.addStructure(name, data.getWorldName(), location, location.clone().add(width - 1, 0, length - 1));
 
         if(structure.getMinChunk().isLoaded()){
             structure.place();

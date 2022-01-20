@@ -1,6 +1,7 @@
 package com.hirises.civilization.config;
 
 import com.hirises.civilization.Civilization;
+import com.hirises.civilization.data.StructureData;
 import com.hirises.civilization.gui.FreeShopItemUnit;
 import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.data.ChunkData;
@@ -26,12 +27,13 @@ public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
     public static int killRange;
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
+    public static DataCache<StructureData> structureData = new DataCache<>(config, "구조물", StructureData::new);
     public static PlayerCacheStore<PlayerCache> cacheStore;
 
     public static YamlStore cache = new YamlStore(Civilization.getInst(), "Saves/cache.yml");
     public static YamlStore data = new YamlStore(Civilization.getInst(), "Saves/data.yml");
     public static YamlStore state = new YamlStore(Civilization.getInst(), "Saves/state.yml");
-    public static DirDataCache lootTable = new DirDataCache(Civilization.getInst(), "Schematics", LootTableUnit::new);
+    public static DirDataCache<LootTableUnit> lootTable = new DirDataCache(Civilization.getInst(), "Schematics", LootTableUnit::new);
     public static List<FreeShopItemUnit> shopItem = new ArrayList<>();
     public static final Map<ChunkData, Structure> structureList = new HashMap<>();
 
@@ -52,6 +54,7 @@ public class ConfigManager {
         }
 
         menu.load();
+        structureData.load();
 
         cacheStore = new PlayerCacheStore<>(PlayerCache::new);
         cacheStore.checkExistAll();

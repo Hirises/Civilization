@@ -3,6 +3,7 @@ package com.hirises.civilization;
 import com.hirises.civilization.command.OPCommand;
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.data.StructureData;
 import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.world.NMSSupport;
@@ -342,13 +343,9 @@ public final class Civilization extends JavaPlugin{
                 continue;
             }
 
-            String rootKey = "구조물." + key;
-            CivilizationWorld world = CivilizationWorld.getByName(ConfigManager.config.get(String.class, rootKey + ".world"));
-            int repeat = ConfigManager.config.get(Integer.class, rootKey + ".count");
-            for(int i = 0; i < repeat; i++){
-                List<String> variants = ConfigManager.config.getConfig().getStringList(rootKey + ".variants");
-                String name = key + variants.get((new Random()).nextInt(variants.size()));
-                NMSSupport.lazyPlaceStructure(world, name);
+            StructureData data = ConfigManager.config.getOrDefault(new StructureData(), "구조물." + key);
+            for(int i = 0; i < data.getCount(); i++){
+                NMSSupport.lazyPlaceStructure(data);
             }
         }
     }
