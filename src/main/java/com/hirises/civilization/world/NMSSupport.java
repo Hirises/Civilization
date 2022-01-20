@@ -139,7 +139,6 @@ public final class NMSSupport {
     }
 
     public static void pasteStructure(Clipboard clipboard, Location location){
-        location.add(-1, 0, -1);    //보정
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(new BukkitWorld(location.getWorld()))) {
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(editSession)

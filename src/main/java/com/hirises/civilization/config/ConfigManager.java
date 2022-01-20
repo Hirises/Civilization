@@ -46,18 +46,19 @@ public class ConfigManager {
         data.load(true);
         lootTable.load();
         killRange = config.get(Integer.class, "현상금.범위");
-        for(String key : data.getKeys("자유시장")){
-            shopItem.add(data.getOrDefault(new FreeShopItemUnit(), "자유시장." + key));
-        }
-        for(String key : data.getKeys("구조물")){
-            addStructure(data.getOrDefault(new Structure(), "구조물." + key));
-        }
 
         menu.load();
         structureData.load();
 
         cacheStore = new PlayerCacheStore<>(PlayerCache::new);
         cacheStore.checkExistAll();
+
+        for(String key : data.getKeys("자유시장")){
+            shopItem.add(data.getOrDefault(new FreeShopItemUnit(), "자유시장." + key));
+        }
+        for(String key : data.getKeys("구조물")){
+            addStructure(data.getOrDefault(new Structure(), "구조물." + key));
+        }
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
 
@@ -69,7 +70,9 @@ public class ConfigManager {
         saveShopItem();
         cacheStore.saveAll();
         saveStructures();
-        state.set("lastHitEnderDragon", WorldListener.LastHitEnderDragon.toString());
+        if(WorldListener.LastHitEnderDragon != null){
+            state.set("lastHitEnderDragon", WorldListener.LastHitEnderDragon.toString());
+        }
     }
 
     public static Structure addStructure(StructureInfo info, Location loc1, Location loc2, boolean placed){

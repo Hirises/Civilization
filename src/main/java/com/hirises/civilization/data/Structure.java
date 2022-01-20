@@ -63,10 +63,8 @@ public class Structure implements DataUnit {
         if(info.getLoots() != null){
             LootTableUnit lootTable = info.getLoots();
             clipboard.getRegion().forEach(value -> {
-                Util.logging(value);
                 Location location = NMSSupport.toLocation(world, value);
                 if(location.getBlock().getType().equals(Material.CHEST)){
-                    Util.logging("chest");
                     Chest chest = (Chest) location.getBlock().getState();
                     chest.getBlockInventory().setContents(lootTable.getRandomly().toArray(new ItemStack[0]));
                     chest.update();

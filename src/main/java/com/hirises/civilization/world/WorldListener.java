@@ -81,12 +81,12 @@ public class WorldListener implements Listener {
                 }
             }
         }catch (Exception e) {
-            Util.logging(ChatColor.RED + "---------------------   경고!   ---------------------");
-            Util.logging(ChatColor.DARK_RED + "플러그인을 실행하는 도중 오류가 발생하였습니다.");
-            Util.logging(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Saves 폴더와 " +
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "---------------------   경고!   ---------------------");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "플러그인을 실행하는 도중 오류가 발생하였습니다.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Saves 폴더와 " +
                     "Civilization, Civilization_Nether, Civilization_TheEnd 폴더를 전부 삭제하신 후 다시 시도해보세요.");
-            Util.logging(ChatColor.DARK_RED + "해당 현상이 반복되면 서버를 다시 생성해주세요");
-            Util.logging(ChatColor.RED + "--------------------------------------------------");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "해당 현상이 반복되면 서버를 다시 생성해주세요");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "--------------------------------------------------");
             e.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(Civilization.getInst());
         }
