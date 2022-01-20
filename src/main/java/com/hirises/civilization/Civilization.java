@@ -151,6 +151,7 @@ public final class Civilization extends JavaPlugin{
             for(String key : ConfigManager.cache.getKeys("")){
                 ConfigManager.cache.removeKey(key);
             }
+            ConfigManager.saveUsers();
             ConfigManager.cache.save();
 
             if(isStart){
@@ -385,6 +386,9 @@ public final class Civilization extends JavaPlugin{
         board.setDisplayName("Civilization");
         ScoreBoardHandler.show(player, board);
         PlayerHandler.updateScoreBoard(player);
+
+        ConfigManager.allUser.add(player.getUniqueId());
+        ConfigManager.saveUsers();
     }
 
     private static void deleteWalk(Path path){

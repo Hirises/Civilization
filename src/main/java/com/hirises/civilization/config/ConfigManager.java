@@ -23,6 +23,7 @@ import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
@@ -38,6 +39,7 @@ public class ConfigManager {
     public static List<FreeShopItemUnit> shopItem = new ArrayList<>();
     public static final Map<ChunkData, Structure> structureList = new HashMap<>();
 
+    public static List<UUID> allUser = new ArrayList<>();
     private static ItemStack moneyItem;
 
     public static void init(){
@@ -68,6 +70,7 @@ public class ConfigManager {
 
         String uuid = state.get(String.class, "lastHitEnderDragon");
         WorldListener.LastHitEnderDragon = uuid.trim().equalsIgnoreCase("") ? null : UUID.fromString(uuid);
+        allUser = cache.getConfig().getStringList("모든참여자").stream().map(s -> UUID.fromString(s)).collect(Collectors.toList());
     }
 
     public static void save(){
@@ -77,6 +80,7 @@ public class ConfigManager {
         if(WorldListener.LastHitEnderDragon != null){
             state.set("lastHitEnderDragon", WorldListener.LastHitEnderDragon.toString());
         }
+        saveUsers();
     }
 
     public static Structure addStructure(StructureInfo info, Location loc1, Location loc2, boolean placed){
@@ -120,5 +124,9 @@ public class ConfigManager {
             i++;
         }
         data.save();
+    }
+
+    public static void saveUsers(){
+        cache.set("모든참여자", allUser);
     }
 }

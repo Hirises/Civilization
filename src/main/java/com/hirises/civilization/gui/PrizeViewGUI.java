@@ -15,7 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,9 +32,10 @@ public class PrizeViewGUI extends AbstractGUI {
         bind("i", container);
         List<ItemStack> items = new ArrayList<>();
         List<OfflinePlayer> players =
-                Arrays.stream(Bukkit.getOfflinePlayers())
+                ConfigManager.allUser.stream()
                         .distinct()
-                        .sorted(Comparator.comparingLong(value -> -1 * ConfigManager.getCache(value.getUniqueId()).getKillRewardModifier()))
+                        .sorted(Comparator.comparingLong(value -> -1 * ConfigManager.getCache(value).getKillRewardModifier()))
+                        .map(value -> Bukkit.getOfflinePlayer(value))
                         .collect(Collectors.toList());
         for(OfflinePlayer player : players){
             items.add(getHeadItem(player));
@@ -82,9 +82,10 @@ public class PrizeViewGUI extends AbstractGUI {
     protected void onChange() {
         List<ItemStack> items = new ArrayList<>();
         List<OfflinePlayer> players =
-                Arrays.stream(Bukkit.getOfflinePlayers())
+                ConfigManager.allUser.stream()
                         .distinct()
-                        .sorted(Comparator.comparingLong(value -> -1 * ConfigManager.getCache(value.getUniqueId()).getKillRewardModifier()))
+                        .sorted(Comparator.comparingLong(value -> -1 * ConfigManager.getCache(value).getKillRewardModifier()))
+                        .map(value -> Bukkit.getOfflinePlayer(value))
                         .collect(Collectors.toList());
         for(OfflinePlayer player : players){
             items.add(getHeadItem(player));
