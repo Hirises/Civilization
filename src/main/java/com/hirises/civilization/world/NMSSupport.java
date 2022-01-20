@@ -92,7 +92,7 @@ public final class NMSSupport {
         return output;
     }
 
-    public static void lazyPlaceStructure(StructureInfo data){
+    public static Structure lazyPlaceStructure(StructureInfo data){
         String name = data.getRandomName();
         Clipboard clipboard = getStructure(name);
 
@@ -108,9 +108,11 @@ public final class NMSSupport {
         if(structure.getMinChunk().isLoaded()){
             structure.place();
         }
+
+        return structure;
     }
 
-    public static void lazyPlaceStructure(StructureInfo data, Location location){
+    public static Structure lazyPlaceStructure(StructureInfo data, Location location){
         String name = data.getRandomName();
         Clipboard clipboard = getStructure(name);
 
@@ -125,6 +127,8 @@ public final class NMSSupport {
         if(structure.getMinChunk().isLoaded()){
             structure.place();
         }
+
+        return structure;
     }
 
     public static Clipboard getStructure(String name){

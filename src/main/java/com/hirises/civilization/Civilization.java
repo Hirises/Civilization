@@ -3,12 +3,14 @@ package com.hirises.civilization;
 import com.hirises.civilization.command.OPCommand;
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.data.Structure;
 import com.hirises.civilization.data.StructureInfo;
 import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.world.NMSSupport;
 import com.hirises.civilization.world.WorldListener;
 import com.hirises.core.data.AlertUnit;
+import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIGetEvent;
@@ -19,6 +21,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -106,13 +109,6 @@ public final class Civilization extends JavaPlugin{
     public void onDisable() {
         // Plugin shutdown logic
         try{
-            for(Player player : Bukkit.getOnlinePlayers()){
-                GUIGetEvent event = new GUIGetEvent(player.getUniqueId());
-                Bukkit.getPluginManager().callEvent(event);
-                if(event.getTopGUI() != null){
-                    event.getTopGUI().closeAll();
-                }
-            }
             ConfigManager.save();
         }catch (Exception e) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "---------------------   경고!   ---------------------");
@@ -151,6 +147,7 @@ public final class Civilization extends JavaPlugin{
             for(String key : ConfigManager.cache.getKeys("")){
                 ConfigManager.cache.removeKey(key);
             }
+            ConfigManager.allUser.clear();
             ConfigManager.saveUsers();
             ConfigManager.cache.save();
 
@@ -228,16 +225,19 @@ public final class Civilization extends JavaPlugin{
             Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "1/3"));
             WorldCreator creator = new WorldCreator(WORLD_NAME);
             world = new CivilizationWorld(Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL)), worldSize);
+            world.get().setGameRule(GameRule.KEEP_INVENTORY, true);
 
             Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "2/3"));
                 WorldCreator creator_nether = new WorldCreator(WORLD_NETHER_NAME);
                 world_nether = new CivilizationWorld(Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER)), (float)worldSize / 8);
+                world_nether.get().setGameRule(GameRule.KEEP_INVENTORY, true);
 
                 Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                     Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "3/3"));
                     WorldCreator creator_theEnd = new WorldCreator(WORLD_END_NAME);
                     world_end = new CivilizationWorld(Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END)), 1000);
+                    world_end.get().setGameRule(GameRule.KEEP_INVENTORY, true);
 
                     Map<Player, Location> spawn = new HashMap<>();
                     for(Player player : Bukkit.getOnlinePlayers()){
@@ -358,12 +358,15 @@ public final class Civilization extends JavaPlugin{
     public static Location getNewSpawnPoint(Player player, boolean asynchronous){
         Location spawn = NMSSupport.getRandomLocation(world, 1, 1, true);
 
-        NMSSupport.lazyPlaceStructure(ConfigManager.structureData.get("spawn"), spawn);
+        Structure structure = NMSSupport.lazyPlaceStructure(ConfigManager.structureData.get("spawn"), spawn);
 
         spawn.add(0.5, 0, 0.5);
         if (asynchronous) {
             world.get().loadChunk(spawn.getChunk());
         }else{
+            if(!structure.isPlaced()){
+                structure.place();
+            }
             player.teleport(spawn);
         }
         player.setBedSpawnLocation(spawn, true);
@@ -381,6 +384,11 @@ public final class Civilization extends JavaPlugin{
         player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, invincibleTime, 2, false, false, true));
         player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, invincibleTime, 2, false, false, true));
         player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, invincibleTime, 9, false, false, true));
+
+        for(String key : ConfigManager.config.getKeys("기본템")){
+            ItemStack item = ConfigManager.config.getOrDefault(new ItemStackUnit(), "기본템." + key).getItem();
+            player.getInventory().addItem(item);
+        }
 
         Objective board = ScoreBoardHandler.getOrNew(player);
         board.setDisplayName("Civilization");

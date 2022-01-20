@@ -70,7 +70,9 @@ public class ConfigManager {
 
         String uuid = state.get(String.class, "lastHitEnderDragon");
         WorldListener.LastHitEnderDragon = uuid.trim().equalsIgnoreCase("") ? null : UUID.fromString(uuid);
-        allUser = cache.getConfig().getStringList("모든참여자").stream().map(s -> UUID.fromString(s)).collect(Collectors.toList());
+        if(cache.containKey("모든참여자")){
+            allUser = cache.getConfig().getStringList("모든참여자").stream().map(s -> UUID.fromString(s)).collect(Collectors.toList());
+        }
     }
 
     public static void save(){
@@ -127,6 +129,6 @@ public class ConfigManager {
     }
 
     public static void saveUsers(){
-        cache.set("모든참여자", allUser);
+        cache.set("모든참여자", allUser.stream().map(value -> value.toString()).collect(Collectors.toList()));
     }
 }

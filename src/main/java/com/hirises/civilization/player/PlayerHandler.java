@@ -22,8 +22,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Objective;
 
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerHandler implements Listener {
 
@@ -115,9 +114,18 @@ public class PlayerHandler implements Listener {
         ItemStack[] content = player.getInventory().getContents();
         int min = ConfigManager.config.get(Integer.class, "사망아이템드롭.최소");
         int max = ConfigManager.config.get(Integer.class, "사망아이템드롭.최대");
-        int count = (new Random()).nextInt(max - min) + min;
+        int count = (new Random()).nextInt(max - min + 1) + min;
+
+        List<Integer> flipBag = new ArrayList<>();
         for(int i = 0; i < content.length; i++){
-            int ran = (new Random()).nextInt(content.length);
+            flipBag.add(i);
+        }
+        Random random = new Random();
+        for(int i = 0; i < content.length; i++){
+            int index = random.nextInt(flipBag.size());
+            int ran = flipBag.get(index);
+            flipBag.remove(index);
+
             ItemStack drop = content[ran];
             if(ItemUtil.isExist(drop)){
                 world.dropItemNaturally(location, drop);
