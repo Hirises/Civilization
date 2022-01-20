@@ -1,4 +1,4 @@
-package com.hirises.civilization.gui;
+package com.hirises.civilization.data;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;

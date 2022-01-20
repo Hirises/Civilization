@@ -1,8 +1,8 @@
-package com.hirises.civilization.gui;
+package com.hirises.civilization.gui.freeshop;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
-import com.hirises.civilization.player.PlayerCache;
+import com.hirises.civilization.data.FreeShopItemUnit;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.flag.Flags;
 import com.hirises.core.inventory.AbstractGUI;
@@ -16,32 +16,30 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.stream.Collectors;
 
-public class FreeShopViewGUI extends AbstractGUI {
+public class FreeShopMyItemGUI extends AbstractGUI {
     private GUIPageContainer container;
 
-    public FreeShopViewGUI() {
-        super(new Flags<>(GUIFlags.PREVENT_TOP_INVENTORY_MODIFY), ConfigManager.menu.get("자유시장"));
+    public FreeShopMyItemGUI() {
+        super(new Flags<>(GUIFlags.PREVENT_TOP_INVENTORY_MODIFY), ConfigManager.menu.get("자유시장_내아이템"));
     }
 
     @Override
     protected void createInventory() {
         container = new GUIPageContainer("아이템", new Flags<>(GUIContainer.GUIContainerFlags.PREVENT_MODIFY));
         bind("i", container);
-        container.setAllPageItem(ConfigManager.shopItem.stream().map(value -> value.getShopItem()).collect(Collectors.toList()), container.getInnerSlots().size());
-        container.bindOnClick((gui, rawSlot, i1, clickType, inventoryAction, guiEventResult) -> {
+        container.setAllPageItem(ConfigManager.shopItem.stream()
+                .filter(value -> value.getRegisterUUID().equals(player.getUniqueId()))
+                .map(value -> value.getViewItem())
+                .collect(Collectors.toList()), container.getInnerSlots().size());
+        container.bindOnClick((gui, rawSlot, i1, click, action, guiEventResult) -> {
             ItemStack item = inventory.getItem(rawSlot);
             if(NBTTagStore.containKey(item, Keys.FreeShopItemIndex.toString())){
                 int index = NBTTagStore.get(item, Keys.FreeShopItemIndex.toString(), Integer.class);
                 FreeShopItemUnit unit = ConfigManager.shopItem.get(index);
-                PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-                if(cache.hasMoney(unit.getPrice())){
-                    cache.operateMoney(-unit.getPrice());
-                    ConfigManager.getCache(unit.getRegisterUUID()).operateMoney(unit.getPrice());
-                    player.getInventory().addItem(unit.getOriginItem());
-                    ConfigManager.shopItem.remove(index);
-                    Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopMyItemGUI.class, false));
-                    Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopViewGUI.class, false));
-                }
+                player.getInventory().addItem(unit.getOriginItem());
+                ConfigManager.shopItem.remove(index);
+                Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopMyItemGUI.class, false));
+                Bukkit.getPluginManager().callEvent(new GUIUpdateEvent(null, FreeShopViewGUI.class, false));
             }
         });
 
@@ -59,16 +57,19 @@ public class FreeShopViewGUI extends AbstractGUI {
             gui.close();
         });
 
-        GUIStateButton register = new GUIStateButton("등록/해제", "r");
+        GUIStateButton register = new GUIStateButton("등록", "r");
         bind("r", register);
         register.bindOnStateChange((gui, i, i1) -> {
-            new FreeShopMyItemGUI().open(player, gui);
+            new FreeShopRegisterGUI().open(player, gui);
         });
     }
 
     @Override
     protected void onChange() {
-        container.setAllPageItem(ConfigManager.shopItem.stream().map(value -> value.getShopItem()).collect(Collectors.toList()), container.getInnerSlots().size());
+        container.setAllPageItem(ConfigManager.shopItem.stream()
+                .filter(value -> value.getRegisterUUID().equals(player.getUniqueId()))
+                .map(value -> value.getViewItem())
+                .collect(Collectors.toList()), container.getInnerSlots().size());
     }
 
     @Override

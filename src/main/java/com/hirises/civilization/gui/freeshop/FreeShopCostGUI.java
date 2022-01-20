@@ -1,6 +1,7 @@
-package com.hirises.civilization.gui;
+package com.hirises.civilization.gui.freeshop;
 
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.data.FreeShopItemUnit;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.flag.Flags;
 import com.hirises.core.inventory.AbstractGUI;

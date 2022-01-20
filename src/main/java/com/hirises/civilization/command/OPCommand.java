@@ -2,6 +2,9 @@ package com.hirises.civilization.command;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.world.NMSSupport;
+import com.hirises.core.util.Util;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -63,6 +66,12 @@ public class OPCommand implements CommandExecutor, TabCompleter {
                 }
                 break;
             }
+            case "reload": {
+                Util.broadcast(new TextComponent(ChatColor.RED + "리로드를 시작합니다"));
+                ConfigManager.init();
+                Util.broadcast(new TextComponent(ChatColor.GREEN + "완료"));
+                break;
+            }
         }
         return false;
     }
@@ -73,7 +82,7 @@ public class OPCommand implements CommandExecutor, TabCompleter {
         ArrayList<String> output = new ArrayList<>();
         switch (args.length) {
             case 1: {
-                allOutputs = new String[]{"start", "reset", "confirm"};
+                allOutputs = new String[]{"start", "reset", "confirm", "reload"};
                 for (String str : allOutputs) {
                     if (str.startsWith(args[0])) {
                         output.add(str);

@@ -8,12 +8,12 @@ import com.hirises.civilization.data.StructureInfo;
 import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.world.NMSSupport;
+import com.hirises.civilization.world.PrefixHandler;
 import com.hirises.civilization.world.WorldListener;
 import com.hirises.core.data.AlertUnit;
 import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.TimeUnit;
 import com.hirises.core.display.ScoreBoardHandler;
-import com.hirises.core.event.GUIGetEvent;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.task.CancelableTask;
 import com.hirises.core.util.Util;
@@ -94,6 +94,7 @@ public final class Civilization extends JavaPlugin{
         getCommand("civilization").setExecutor(new OPCommand());
 
         Bukkit.getPluginManager().registerEvents(new WorldListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new PrefixHandler(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerHandler(), plugin);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
@@ -150,6 +151,10 @@ public final class Civilization extends JavaPlugin{
             ConfigManager.allUser.clear();
             ConfigManager.saveUsers();
             ConfigManager.cache.save();
+            ConfigManager.prefixInfo.getSafeDataUnitMap().values().forEach(value -> value.setFinisher(null));
+            ConfigManager.savePrefix();
+            ConfigManager.prefixInfo.reset();
+            ConfigManager.prefixInfo.load();
 
             if(isStart){
                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "플레이어를 초기화시킵니다..."));

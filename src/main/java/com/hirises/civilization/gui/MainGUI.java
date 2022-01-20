@@ -1,6 +1,7 @@
 package com.hirises.civilization.gui;
 
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.gui.freeshop.FreeShopViewGUI;
 import com.hirises.core.flag.Flags;
 import com.hirises.core.inventory.AbstractGUI;
 import com.hirises.core.inventory.GUIFlags;
@@ -35,6 +36,12 @@ public class MainGUI extends AbstractGUI {
         bind("s", shop);
         shop.bindOnStateChange((gui, pre, next) -> {
             new FreeShopViewGUI().open(player, gui);
+        });
+
+        GUIStateButton prefix = new GUIStateButton("칭호", "p");
+        bind("p", prefix);
+        prefix.bindOnStateChange((gui, pre, next) -> {
+            new PrefixViewGUI().open(player, gui);
         });
     }
 

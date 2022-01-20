@@ -1,4 +1,4 @@
-package com.hirises.civilization.gui;
+package com.hirises.civilization.gui.freeshop;
 
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.flag.Flags;

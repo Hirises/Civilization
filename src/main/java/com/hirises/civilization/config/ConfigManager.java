@@ -1,13 +1,9 @@
 package com.hirises.civilization.config;
 
 import com.hirises.civilization.Civilization;
-import com.hirises.civilization.data.StructureInfo;
-import com.hirises.civilization.data.Vector3;
-import com.hirises.civilization.gui.FreeShopItemUnit;
+import com.hirises.civilization.data.*;
 import com.hirises.civilization.player.PlayerCache;
-import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.world.NMSSupport;
-import com.hirises.civilization.data.Structure;
 import com.hirises.civilization.world.WorldListener;
 import com.hirises.core.data.GUIShapeUnit;
 import com.hirises.core.data.ItemStackUnit;
@@ -27,9 +23,11 @@ import java.util.stream.Collectors;
 
 public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
+    public static YamlStore prefix = new YamlStore(Civilization.getInst(), "Saves/prefix.yml");
     public static int killRange;
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
     public static DataCache<StructureInfo> structureData = new DataCache<>(config, "구조물", StructureInfo::new);
+    public static DataCache<PrefixInfo> prefixInfo = new DataCache<>(prefix, "", PrefixInfo::new);
     public static PlayerCacheStore<PlayerCache> cacheStore;
 
     public static YamlStore cache = new YamlStore(Civilization.getInst(), "Saves/cache.yml");
@@ -47,6 +45,7 @@ public class ConfigManager {
         config.load(true);
         cache.load(true);
         data.load(true);
+        prefix.load(true);
         lootTable.load();
         killRange = config.get(Integer.class, "현상금.범위");
 
@@ -55,13 +54,16 @@ public class ConfigManager {
 
         menu.load();
         structureData.load();
+        prefixInfo.load();
 
         cacheStore = new PlayerCacheStore<>(PlayerCache::new);
         cacheStore.checkExistAll();
 
+        shopItem.clear();
         for(String key : data.getKeys("자유시장")){
             shopItem.add(data.getOrDefault(new FreeShopItemUnit(), "자유시장." + key));
         }
+        structureList.clear();
         for(String key : data.getKeys("구조물")){
             addStructure(data.getOrDefault(new Structure(), "구조물." + key));
         }
@@ -83,6 +85,7 @@ public class ConfigManager {
             state.set("lastHitEnderDragon", WorldListener.LastHitEnderDragon.toString());
         }
         saveUsers();
+        savePrefix();
     }
 
     public static Structure addStructure(StructureInfo info, Location loc1, Location loc2, boolean placed){
@@ -130,5 +133,11 @@ public class ConfigManager {
 
     public static void saveUsers(){
         cache.set("모든참여자", allUser.stream().map(value -> value.toString()).collect(Collectors.toList()));
+    }
+
+    public static void savePrefix(){
+        for(PrefixInfo info : prefixInfo.getSafeDataUnitMap().values()){
+            prefix.upsert(info, String.valueOf(info.getId()));
+        }
     }
 }
