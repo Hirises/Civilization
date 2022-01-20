@@ -356,10 +356,10 @@ public final class Civilization extends JavaPlugin{
 
     public static Location getNewSpawnPoint(Player player, boolean asynchronous){
         Location spawn = NMSSupport.getRandomLocation(world, 1, 1, true);
-        spawn.add(0.5, 0, 0.5);
 
         NMSSupport.lazyPlaceStructure(ConfigManager.structureData.get("spawn"), spawn);
 
+        spawn.add(0.5, 0, 0.5);
         if (asynchronous) {
             world.get().loadChunk(spawn.getChunk());
         }else{

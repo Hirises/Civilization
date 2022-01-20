@@ -12,7 +12,7 @@ offset:
     z: -1
   center:   #실제 설치할 때 중심 맞추기 위한 offset
     x: -4
-    y: 0
+    y: -1
     z: -4
 구조물:
   spawn:
@@ -24,7 +24,7 @@ offset:
     offset:
       center:
         x: 0
-        y: 0
+        y: -1
         z: 0
   crack:
     name: 'crack'

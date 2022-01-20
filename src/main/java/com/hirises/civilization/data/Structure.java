@@ -10,6 +10,7 @@ import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.ItemStack;
 
@@ -57,20 +58,25 @@ public class Structure implements DataUnit {
         Clipboard clipboard = NMSSupport.getStructure(getType());
         Vector3 offset = info.getPointOffset();
         Location place = new Location(world, minX + offset.getX(), y  + offset.getY() + info.getCenterOffset().getY(), minZ  + offset.getZ());
-        this.minY = y - offset.getY() + info.getCenterOffset().getY();
+        this.minY = y + info.getCenterOffset().getY();
         this.maxY = this.minY + clipboard.getRegion().getHeight() - 1;
         NMSSupport.pasteStructure(clipboard, place);
 
         if(info.getLoots() != null){
             LootTableUnit lootTable = info.getLoots();
-            clipboard.getRegion().forEach(value -> {
-                Location location = NMSSupport.toLocation(world, value);
-                if(location.getBlock().getType().equals(Material.CHEST)){
-                    Chest chest = (Chest) location.getBlock().getState();
-                    chest.getBlockInventory().setContents(lootTable.getRandomly().toArray(new ItemStack[0]));
-                    chest.update();
+            for(int curX = minX; curX <= maxX; curX++){
+                for(int curY = minY; curY <= maxY; curY++){
+                    for(int curZ = minZ; curZ <= maxZ; curZ++){
+                        Block block = world.getBlockAt(curX, curY, curZ);
+
+                        if(block != null && block.getType().equals(Material.CHEST)){
+                            Chest chest = (Chest) block.getState();
+                            chest.getBlockInventory().setContents(lootTable.getRandomly().toArray(new ItemStack[0]));
+                            chest.update();
+                        }
+                    }
                 }
-            });
+            }
         }
 
         placed = true;
