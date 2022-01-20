@@ -104,6 +104,15 @@ public final class Civilization extends JavaPlugin{
             Util.broadcast(new TextComponent(ChatColor.YELLOW + "저장중입니다..."));
             ConfigManager.cacheStore.saveAll();
         }, 5 * 60 * 20, 5 * 60 * 20);
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            if(!isStart()){
+                return;
+            }
+            for(Player player : Bukkit.getOnlinePlayers()){
+                ConfigManager.getCache(player.getUniqueId()).operateStamina(ConfigManager.healStamina);
+            }
+        }, 5 * 60 * 20, 5 * 60 * 20);
     }
 
     @Override

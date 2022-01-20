@@ -76,6 +76,22 @@ public class PlayerHandler implements Listener {
     }
 
     @EventHandler
+    public void run(PlayerMoveEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Player player = event.getPlayer();
+        if(player.isSprinting()){
+            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            if(cache.getStamina() <= 0){
+                player.setSprinting(false);
+            }else{
+                cache.operateStamina(ConfigManager.runStamina);
+            }
+        }
+    }
+
+    @EventHandler
     public void useMoneyItem(PlayerInteractEvent event){
         if(!Civilization.isStart()){
             return;

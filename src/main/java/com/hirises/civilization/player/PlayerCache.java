@@ -1,8 +1,12 @@
 package com.hirises.civilization.player;
 
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.core.display.Display;
 import com.hirises.core.store.IPlayerCache;
+import com.hirises.core.util.Util;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 import java.util.Set;
 import java.util.UUID;
@@ -12,6 +16,7 @@ public class PlayerCache implements IPlayerCache {
     private long money;
     private int kill;
     private Location spawn;
+    private int stamina;
 
     public PlayerCache(UUID uuid){
         this.uuid = uuid;
@@ -23,6 +28,7 @@ public class PlayerCache implements IPlayerCache {
         this.spawn = ConfigManager.cache.getConfig().getLocation(uuid.toString() + ".스폰");
         this.money = ConfigManager.cache.getOrDefault(Long.class, defaultMoney, uuid.toString() + ".돈");
         this.kill = ConfigManager.cache.getOrDefault(Integer.class, 0, uuid.toString() + ".킬");
+        this.stamina = ConfigManager.cache.getOrDefault(Integer.class, ConfigManager.defaultStamina, uuid.toString() + ".스테미나");
     }
 
     @Override
@@ -30,6 +36,7 @@ public class PlayerCache implements IPlayerCache {
         ConfigManager.cache.getConfig().set(uuid.toString() + ".스폰", this.spawn);
         ConfigManager.cache.set(uuid.toString() + ".돈", this.money);
         ConfigManager.cache.set(uuid.toString() + ".킬", this.kill);
+        ConfigManager.cache.set(uuid.toString() + ".스테미나", this.stamina);
     }
 
     @Override
@@ -93,5 +100,27 @@ public class PlayerCache implements IPlayerCache {
 
     public long getKillRewardModifier(){
         return ConfigManager.config.get(Long.class, "현상금." + kill);
+    }
+
+    public int getStamina() {
+        return stamina;
+    }
+
+    public void setStamina(int stamina) {
+        if(stamina < 0){
+            stamina = 0;
+        }
+        if(stamina > ConfigManager.defaultStamina){
+            stamina = ConfigManager.defaultStamina;
+        }
+        this.stamina = stamina;
+        Player player = Bukkit.getPlayer(uuid);
+        if(player != null){
+            Display.sendDisplayUnit(player, ConfigManager.staminaActionBar, Util.toRemap("amount", String.valueOf(stamina)));
+        }
+    }
+
+    public void operateStamina(int amount){
+        setStamina(getStamina() + amount);
     }
 }

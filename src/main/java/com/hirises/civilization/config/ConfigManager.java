@@ -10,6 +10,7 @@ import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataCache;
 import com.hirises.core.data.unit.DirDataCache;
+import com.hirises.core.display.unit.ActionBarUnit;
 import com.hirises.core.store.PlayerCacheStore;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
@@ -17,6 +18,7 @@ import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,6 +41,13 @@ public class ConfigManager {
 
     public static List<UUID> allUser = new ArrayList<>();
     private static ItemStack moneyItem;
+    public static int defaultStamina;
+    public static int runStamina;
+    public static int jumpStamina;
+    public static int attackStamina;
+    public static int hitStamina;
+    public static int healStamina;
+    public static ActionBarUnit staminaActionBar;
 
     public static void init(){
         state.load(true);
@@ -75,6 +84,14 @@ public class ConfigManager {
         if(cache.containKey("모든참여자")){
             allUser = cache.getConfig().getStringList("모든참여자").stream().map(s -> UUID.fromString(s)).collect(Collectors.toList());
         }
+
+        defaultStamina = config.get(Integer.class, "스테미나.기본");
+        runStamina = config.get(Integer.class, "스테미나.달리기");
+        jumpStamina = config.get(Integer.class, "스테미나.점프");
+        attackStamina = config.get(Integer.class, "스테미나.공격");
+        hitStamina = config.get(Integer.class, "스테미나.데미지");
+        healStamina = config.get(Integer.class, "스테미나.초당회복");
+        staminaActionBar = config.getOrDefault(new ActionBarUnit(), "스테미나.엑션바");
     }
 
     public static void save(){
