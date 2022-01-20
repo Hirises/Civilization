@@ -5,8 +5,8 @@ import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.Pair;
-import com.hirises.core.util.Util;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.math.Vector3;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -56,8 +56,8 @@ public class Structure implements DataUnit {
         int y = world.getHighestBlockYAt(minX, minZ, HeightMap.MOTION_BLOCKING_NO_LEAVES);
         y += 1;
         Clipboard clipboard = NMSSupport.getStructure(getType());
-        //offset
-        Location place = new Location(world, minX - 1, y, minZ - 1);
+        Vector3 offset = info.getPointOffset();
+        Location place = new Location(world, minX + offset.getX(), y  + offset.getY(), minZ  + offset.getZ());
         NMSSupport.pasteStructure(clipboard, place);
 
         if(info.getLoots() != null){

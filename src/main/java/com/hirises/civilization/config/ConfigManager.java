@@ -18,6 +18,7 @@ import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
+import com.sk89q.worldedit.math.Vector3;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
@@ -46,6 +47,9 @@ public class ConfigManager {
         data.load(true);
         lootTable.load();
         killRange = config.get(Integer.class, "현상금.범위");
+
+        StructureInfo.defaultPointOffset = Vector3.at(config.get(Integer.class, "offset.point.x"), config.get(Integer.class, "offset.point.y"), config.get(Integer.class, "offset.point.z"));
+        StructureInfo.defaultCenterOffset = Vector3.at(config.get(Integer.class, "offset.center.x"), config.get(Integer.class, "offset.center.y"), config.get(Integer.class, "offset.center.z"));
 
         menu.load();
         structureData.load();

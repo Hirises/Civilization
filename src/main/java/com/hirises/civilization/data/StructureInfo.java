@@ -4,29 +4,37 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
+import com.sk89q.worldedit.math.Vector3;
 
 import java.util.List;
 import java.util.Random;
 
 public class StructureInfo implements DataUnit {
+    public static Vector3 defaultPointOffset;
+    public static Vector3 defaultCenterOffset;
+
     String prefix;
     int count;
     String world;
     LootTableUnit loots;
     List<String> variants;
     String rootKey;
+    Vector3 pointOffset;
+    Vector3 centerOffset;
 
     public StructureInfo(){
 
     }
 
-    public StructureInfo(String prefix, int count, String world, LootTableUnit loots, List<String> variants, String rootKey) {
+    public StructureInfo(String prefix, int count, String world, LootTableUnit loots, List<String> variants, String rootKey, Vector3 pointOffset, Vector3 centerOffset) {
         this.prefix = prefix;
         this.count = count;
         this.world = world;
         this.loots = loots;
         this.variants = variants;
         this.rootKey = rootKey;
+        this.pointOffset = pointOffset;
+        this.centerOffset = centerOffset;
     }
 
     @Override
@@ -39,6 +47,22 @@ public class StructureInfo implements DataUnit {
             this.loots = ConfigManager.lootTable.get(yml.get(String.class, rootKey + ".loots"));
         }else{
             this.loots = null;
+        }
+        if(yml.containKey(rootKey + ".offset.point")){
+            int x = yml.get(Integer.class, rootKey + ".offset.point.x");
+            int y = yml.get(Integer.class, rootKey + ".offset.point.y");
+            int z = yml.get(Integer.class, rootKey + ".offset.point.z");
+            this.pointOffset = Vector3.at(x, y, z);
+        }else{
+            this.pointOffset = defaultPointOffset;
+        }
+        if(yml.containKey(rootKey + ".offset.center")){
+            int x = yml.get(Integer.class, rootKey + ".offset.center.x");
+            int y = yml.get(Integer.class, rootKey + ".offset.center.y");
+            int z = yml.get(Integer.class, rootKey + ".offset.center.z");
+            this.centerOffset = Vector3.at(x, y, z);
+        }else{
+            this.centerOffset = defaultCenterOffset;
         }
         this.variants = yml.getConfig().getStringList(rootKey + ".variants");
     }
@@ -82,5 +106,13 @@ public class StructureInfo implements DataUnit {
 
     public String getRootKey() {
         return rootKey;
+    }
+
+    public Vector3 getCenterOffset() {
+        return centerOffset;
+    }
+
+    public Vector3 getPointOffset() {
+        return pointOffset;
     }
 }

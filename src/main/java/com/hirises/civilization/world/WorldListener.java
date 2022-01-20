@@ -5,7 +5,6 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.Structure;
 import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -101,7 +100,7 @@ public class WorldListener implements Listener {
             if(ItemUtil.isExist(event.getItem()) && event.getItem().getType().equals(Material.ENDER_EYE)){
                 Block block = event.getClickedBlock();
                 if(block != null && block.getType().equals(Material.END_PORTAL_FRAME)){
-                    if(!NMSSupport.isConflict(block.getWorld().getName(), block.getLocation(), "crack")){
+                    if(!NMSSupport.isConflict(block.getLocation(), "crack")){
                         event.setCancelled(true);
                     }
                 }

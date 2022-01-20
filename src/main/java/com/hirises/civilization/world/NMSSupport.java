@@ -18,6 +18,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import org.bukkit.*;
@@ -105,7 +106,9 @@ public final class NMSSupport {
         int height = region.getHeight();
         Location location = getRandomLocation(data.getWorld(), width, length,false);
         //offset
-        Structure structure = ConfigManager.addStructure(data, location, location.clone().add(width - 1, height - 1, length - 1), false);
+        Vector3 offset = data.getCenterOffset();
+        Structure structure = ConfigManager.addStructure(data, location.clone().add(offset.getX(), offset.getY(), offset.getZ()),
+                location.clone().add(width + offset.getX() - 1, height + offset.getY() - 1, length + offset.getZ() - 1), false);
         if(structure.getMinChunk().isLoaded()){
             structure.place();
         }
@@ -160,8 +163,8 @@ public final class NMSSupport {
         return false;
     }
 
-    public static boolean isConflict(String world, Location location, String type){
-        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(location.getX(), location.getZ());
+    public static boolean isConflict(String world, int x, int y, int z, String type){
+        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(x, z);
         ChunkData chunk = new ChunkData(world, chunkPos.getLeft(), chunkPos.getRight());
         if(ConfigManager.structureList.containsKey(chunk)){
             if(ConfigManager.structureList.get(chunk).getType().startsWith(type)){
@@ -172,7 +175,8 @@ public final class NMSSupport {
     }
 
     public static boolean isConflict(Location location, String type){
-        ChunkData chunk = NMSSupport.toChunkData(location);
+        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(location.getX(), location.getZ());
+        ChunkData chunk = new ChunkData(location.getWorld().getName(), chunkPos.getLeft(), chunkPos.getRight());
         if(ConfigManager.structureList.containsKey(chunk)){
             if(ConfigManager.structureList.get(chunk).getType().startsWith(type)){
                 return true;
@@ -206,8 +210,8 @@ public final class NMSSupport {
         Firework fw = location.getWorld().spawn(location, Firework.class);
         FireworkMeta meta = fw.getFireworkMeta();
         meta.addEffect(FireworkEffect.builder().withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.LIME)
-                .withFade(Color.BLUE, Color.TEAL, Color.AQUA, Color.PURPLE, Color.FUCHSIA)
-                .flicker(true).trail(true).with(FireworkEffect.Type.BALL_LARGE).build());
+                .flicker(true).trail(true).with(FireworkEffect.Type.BALL_LARGE)
+                .withFade(Color.BLUE, Color.TEAL, Color.AQUA, Color.PURPLE, Color.FUCHSIA).build());
         meta.setPower(3);
         fw.setFireworkMeta(meta);
     }
