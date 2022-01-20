@@ -5,9 +5,8 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.data.Structure;
-import com.hirises.civilization.data.StructureData;
+import com.hirises.civilization.data.StructureInfo;
 import com.hirises.core.util.Pair;
-import com.hirises.core.util.Util;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -56,6 +55,10 @@ public final class NMSSupport {
         return new ChunkData(location.getWorld().getName(), chunkPos.getLeft(), chunkPos.getRight());
     }
 
+    public static Location toLocation(World world, BlockVector3 vector3){
+        return new Location(world, vector3.getX(), vector3.getY(), vector3.getZ());
+    }
+
     public static Pair<Integer, Integer> toChunk(double x, double z){
         int chunkX = (int) Math.floor(x / 16);
         int chunkZ = (int) Math.floor(z / 16);
@@ -76,7 +79,7 @@ public final class NMSSupport {
         Location output = null;
         int halfSize = (int)world.getHalfSize();
         do{
-            output = world.getCenter().add(world.getRandom().nextInt(halfSize - dx) - halfSize, 0,
+            output = world.getCenter().add(world.getRandom().nextInt((halfSize * 2) - dx) - halfSize, 0,
                     world.getRandom().nextInt((halfSize * 2) - dz)  - halfSize);
         }while (isConflict(output, ""));
 
@@ -92,16 +95,32 @@ public final class NMSSupport {
         return output;
     }
 
-    public static void lazyPlaceStructure(StructureData data){
+    public static void lazyPlaceStructure(StructureInfo data){
         String name = data.getRandomName();
         Clipboard clipboard = getStructure(name);
 
         Region region = clipboard.getRegion();
-        int width = region.getWidth() - 1;
-        int length = region.getLength() - 1;
+        int width = region.getWidth();
+        int length = region.getLength();
+        int height = region.getHeight();
         Location location = getRandomLocation(data.getWorld(), width, length,false);
-        Structure structure = ConfigManager.addStructure(name, data.getWorldName(), location, location.clone().add(width - 1, 0, length - 1));
+        //offset
+        Structure structure = ConfigManager.addStructure(data, location, location.clone().add(width - 1, height - 1, length - 1), false);
+        if(structure.getMinChunk().isLoaded()){
+            structure.place();
+        }
+    }
 
+    public static void lazyPlaceStructure(StructureInfo data, Location location){
+        String name = data.getRandomName();
+        Clipboard clipboard = getStructure(name);
+
+        Region region = clipboard.getRegion();
+        int width = region.getWidth();
+        int length = region.getLength();
+        int height = region.getHeight();
+        //offset
+        Structure structure = ConfigManager.addStructure(data, location, location.clone().add(width - 1, height - 1, length - 1), false);
         if(structure.getMinChunk().isLoaded()){
             structure.place();
         }

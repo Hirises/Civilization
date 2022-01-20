@@ -3,7 +3,7 @@ package com.hirises.civilization;
 import com.hirises.civilization.command.OPCommand;
 import com.hirises.civilization.command.UserCommand;
 import com.hirises.civilization.config.ConfigManager;
-import com.hirises.civilization.data.StructureData;
+import com.hirises.civilization.data.StructureInfo;
 import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
 import com.hirises.civilization.world.NMSSupport;
@@ -73,7 +73,7 @@ public final class Civilization extends JavaPlugin{
             }
 
             ConfigManager.init();
-        }catch (IllegalArgumentException | ExceptionInInitializerError e){
+        }catch (Exception e){
             Util.logging(ChatColor.RED + "---------------------   경고!   ---------------------");
             Util.logging(ChatColor.DARK_RED + "플러그인을 로드하는 도중 오류가 발생하였습니다.");
             Util.logging(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Saves 폴더와 " +
@@ -114,7 +114,7 @@ public final class Civilization extends JavaPlugin{
                 }
             }
             ConfigManager.save();
-        }catch (IllegalArgumentException | ExceptionInInitializerError e) {
+        }catch (Exception e) {
             Util.logging(ChatColor.RED + "---------------------   경고!   ---------------------");
             Util.logging(ChatColor.DARK_RED + "플러그인을 저장하는 도중 오류가 발생하였습니다.");
             Util.logging(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Saves 폴더와 " +
@@ -259,7 +259,7 @@ public final class Civilization extends JavaPlugin{
                     genStructure();
 
                     new CancelableTask(plugin, 20, 20){
-                        int count = 20;
+                        int count = 30;
                         @Override
                         public void run() {
                             if(count <= 0){
@@ -337,15 +337,9 @@ public final class Civilization extends JavaPlugin{
     //endregion
 
     public static void genStructure(){
-        Set<String> keys = ConfigManager.config.getKeys("구조물");
-        for(String key : keys){
-            if(key.trim().equalsIgnoreCase("")){
-                continue;
-            }
-
-            StructureData data = ConfigManager.config.getOrDefault(new StructureData(), "구조물." + key);
-            for(int i = 0; i < data.getCount(); i++){
-                NMSSupport.lazyPlaceStructure(data);
+        for(StructureInfo info : ConfigManager.structureData.getSafeDataUnitMap().values()){
+            for(int i = 0; i < info.getCount(); i++){
+                NMSSupport.lazyPlaceStructure(info);
             }
         }
     }
@@ -362,13 +356,10 @@ public final class Civilization extends JavaPlugin{
 
     public static Location getNewSpawnPoint(Player player, boolean asynchronous){
         Location spawn = NMSSupport.getRandomLocation(world, 1, 1, true);
-
-        spawn.clone().add(0, -1, 0).getBlock().setType(Material.BEDROCK);
-        spawn.clone().getBlock().setType(Material.AIR);
-        spawn.clone().add(0, 1, 0).getBlock().setType(Material.AIR);
-
-        spawn.setWorld(world.get());
         spawn.add(0.5, 0, 0.5);
+
+        NMSSupport.lazyPlaceStructure(ConfigManager.structureData.get("spawn"), spawn);
+
         if (asynchronous) {
             world.get().loadChunk(spawn.getChunk());
         }else{
@@ -376,7 +367,6 @@ public final class Civilization extends JavaPlugin{
         }
         player.setBedSpawnLocation(spawn, true);
         ConfigManager.getCache(player.getUniqueId()).setSpawn(spawn);
-        ConfigManager.addStructure("spawn", world.getName(), spawn.clone().add(0, -1, 0), spawn.clone().add(0, 1, 0), true);
 
         return spawn;
     }

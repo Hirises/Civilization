@@ -5,9 +5,8 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.Structure;
 import com.hirises.core.util.ItemUtil;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import com.hirises.core.util.Util;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -69,16 +68,27 @@ public class WorldListener implements Listener {
 
     @EventHandler
     public void chunkLoading(ChunkLoadEvent event){
-        if(!Civilization.isStart()){
-            return;
-        }
-        Chunk chunk = event.getChunk();
-        ChunkData chunkData = new ChunkData(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
-        if(NMSSupport.isConflict(chunkData, "")){
-            Structure structure = ConfigManager.structureList.get(chunkData);
-            if(!structure.isPlaced() && structure.getMinChunk().equals(chunkData)){
-                structure.place();
+        try{
+            if(!Civilization.isStart()){
+                return;
             }
+            Chunk chunk = event.getChunk();
+            ChunkData chunkData = new ChunkData(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
+            if(NMSSupport.isConflict(chunkData, "")){
+                Structure structure = ConfigManager.structureList.get(chunkData);
+                if(!structure.isPlaced() && structure.getMinChunk().equals(chunkData)){
+                    structure.place();
+                }
+            }
+        }catch (Exception e) {
+            Util.logging(ChatColor.RED + "---------------------   경고!   ---------------------");
+            Util.logging(ChatColor.DARK_RED + "플러그인을 실행하는 도중 오류가 발생하였습니다.");
+            Util.logging(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Saves 폴더와 " +
+                    "Civilization, Civilization_Nether, Civilization_TheEnd 폴더를 전부 삭제하신 후 다시 시도해보세요.");
+            Util.logging(ChatColor.DARK_RED + "해당 현상이 반복되면 서버를 다시 생성해주세요");
+            Util.logging(ChatColor.RED + "--------------------------------------------------");
+            e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(Civilization.getInst());
         }
     }
 

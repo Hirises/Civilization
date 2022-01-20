@@ -1,7 +1,7 @@
 package com.hirises.civilization.config;
 
 import com.hirises.civilization.Civilization;
-import com.hirises.civilization.data.StructureData;
+import com.hirises.civilization.data.StructureInfo;
 import com.hirises.civilization.gui.FreeShopItemUnit;
 import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.data.ChunkData;
@@ -27,7 +27,7 @@ public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
     public static int killRange;
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
-    public static DataCache<StructureData> structureData = new DataCache<>(config, "구조물", StructureData::new);
+    public static DataCache<StructureInfo> structureData = new DataCache<>(config, "구조물", StructureInfo::new);
     public static PlayerCacheStore<PlayerCache> cacheStore;
 
     public static YamlStore cache = new YamlStore(Civilization.getInst(), "Saves/cache.yml");
@@ -72,11 +72,8 @@ public class ConfigManager {
         state.set("lastHitEnderDragon", WorldListener.LastHitEnderDragon.toString());
     }
 
-    public static Structure addStructure(String type, String world, Location loc1, Location loc2){
-        return addStructure(type, world, loc1, loc2, false);
-    }
-    public static Structure addStructure(String type, String world, Location loc1, Location loc2, boolean placed){
-        Structure structure = new Structure(type, world, loc1, loc2, placed);
+    public static Structure addStructure(StructureInfo info, Location loc1, Location loc2, boolean placed){
+        Structure structure = new Structure(info, loc1, loc2, placed);
         addStructure(structure);
         return structure;
     }
@@ -87,7 +84,7 @@ public class ConfigManager {
 
         for(int x = minChunkPos.getLeft(); x <= maxChunkPos.getLeft(); x++){
             for(int z = minChunkPos.getRight(); z <= maxChunkPos.getRight(); z++){
-                structureList.put(new ChunkData(structure.getWorld(), x, z), structure);
+                structureList.put(new ChunkData(structure.getStructureInfo().getWorldName(), x, z), structure);
             }
         }
     }

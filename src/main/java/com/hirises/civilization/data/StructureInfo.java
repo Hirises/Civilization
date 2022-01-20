@@ -8,19 +8,30 @@ import com.hirises.core.store.YamlStore;
 import java.util.List;
 import java.util.Random;
 
-public class StructureData implements DataUnit {
+public class StructureInfo implements DataUnit {
     String prefix;
     int count;
     String world;
     LootTableUnit loots;
     List<String> variants;
+    String rootKey;
 
-    public StructureData(){
+    public StructureInfo(){
 
+    }
+
+    public StructureInfo(String prefix, int count, String world, LootTableUnit loots, List<String> variants, String rootKey) {
+        this.prefix = prefix;
+        this.count = count;
+        this.world = world;
+        this.loots = loots;
+        this.variants = variants;
+        this.rootKey = rootKey;
     }
 
     @Override
     public void load(YamlStore yml, String rootKey) {
+        this.rootKey = rootKey.substring(rootKey.lastIndexOf(".") + 1);
         this.prefix = yml.get(String.class, rootKey + ".name");
         this.count = yml.get(Integer.class, rootKey + ".count");
         this.world = yml.get(String.class, rootKey + ".world");
@@ -62,6 +73,14 @@ public class StructureData implements DataUnit {
     }
 
     public String getRandomName(){
-        return prefix +  variants.get(new Random().nextInt(variants.size()));
+        return prefix + getRandomVariant();
+    }
+
+    public String getRandomVariant(){
+        return variants.get(new Random().nextInt(variants.size()));
+    }
+
+    public String getRootKey() {
+        return rootKey;
     }
 }
