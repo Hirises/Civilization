@@ -5,8 +5,10 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.Structure;
 import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -20,7 +22,9 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class WorldListener implements Listener {

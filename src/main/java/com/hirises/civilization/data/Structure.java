@@ -5,7 +5,9 @@ import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.Pair;
+import com.hirises.core.util.Util;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -60,6 +62,7 @@ public class Structure implements DataUnit {
         Location place = new Location(world, minX + offset.getX(), y  + offset.getY() + info.getCenterOffset().getY(), minZ  + offset.getZ());
         this.minY = y + info.getCenterOffset().getY();
         this.maxY = this.minY + clipboard.getRegion().getHeight() - 1;
+
         NMSSupport.pasteStructure(clipboard, place);
 
         if(info.getLoots() != null){
@@ -69,10 +72,9 @@ public class Structure implements DataUnit {
                     for(int curZ = minZ; curZ <= maxZ; curZ++){
                         Block block = world.getBlockAt(curX, curY, curZ);
 
-                        if(block != null && block.getType().equals(Material.CHEST)){
+                        if(block.getType().equals(Material.CHEST)){
                             Chest chest = (Chest) block.getState();
-                            chest.getBlockInventory().setContents(lootTable.getRandomly().toArray(new ItemStack[0]));
-                            chest.update();
+                            chest.getInventory().setContents(lootTable.getRandomly().toArray(new ItemStack[0]));
                         }
                     }
                 }
