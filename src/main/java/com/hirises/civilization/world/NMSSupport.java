@@ -34,6 +34,27 @@ public final class NMSSupport {
     public static final Set<Material> AVOID_SPAWN_BLOCKS = Collections.unmodifiableSet(Arrays.asList(
             Material.POWDER_SNOW
     ).stream().collect(Collectors.toSet()));
+    public static final Set<Material> SPAWN_BLOCKS_NETHER = Collections.unmodifiableSet(Arrays.asList(
+            Material.AIR,
+            Material.NETHER_SPROUTS,
+            Material.CRIMSON_STEM,
+            Material.WARPED_STEM,
+            Material.RED_MUSHROOM,
+            Material.BROWN_MUSHROOM,
+            Material.WEEPING_VINES,
+            Material.CRIMSON_STEM,
+            Material.NETHER_WART_BLOCK,
+            Material.FIRE,
+            Material.SOUL_FIRE,
+            Material.CRIMSON_ROOTS,
+            Material.WARPED_WART_BLOCK,
+            Material.CRIMSON_FUNGUS,
+            Material.WARPED_ROOTS,
+            Material.WARPED_FUNGUS,
+            Material.TWISTING_VINES,
+            Material.BONE_BLOCK,
+            Material.SHROOMLIGHT
+    ).stream().collect(Collectors.toSet()));
 
     //region util
 
@@ -81,15 +102,33 @@ public final class NMSSupport {
         }while (isConflict(output, ""));
 
         if(setY){
-            long time = System.currentTimeMillis();
-            output.setY(world.get().getHighestBlockYAt(output.getBlockX(), output.getBlockZ(), HeightMap.MOTION_BLOCKING_NO_LEAVES));
-            output.add(0, 1, 0);
-            while (AVOID_SPAWN_BLOCKS.contains(output.getBlock().getType())){
-                output.add(0, 1, 0);
-            }
+            output.setY(getSafeY(world, output.getBlockX(), output.getBlockZ()));
         }
 
         return output;
+    }
+
+    public static int getSafeY(CivilizationWorld world, int x, int z){
+        int y;
+        if(world.getName().equalsIgnoreCase("Civilization")){
+            y = world.get().getHighestBlockYAt(x, z, HeightMap.MOTION_BLOCKING_NO_LEAVES);
+            y++;
+            while (AVOID_SPAWN_BLOCKS.contains(world.get().getBlockAt(x, y, z).getType())){
+                y++;
+            }
+        }else{
+            y = 100;
+            while (SPAWN_BLOCKS_NETHER.contains(world.get().getBlockAt(x, y, z).getType()) || y > 31){
+                y--;
+            }
+            Material mat = world.get().getBlockAt(x, y, z).getType();
+            while ((!SPAWN_BLOCKS_NETHER.contains(mat) && !mat.equals(Material.LAVA)) || y > 31){
+                y--;
+                mat = world.get().getBlockAt(x, y, z).getType();
+            }
+            y++;
+        }
+        return y;
     }
 
     public static Structure lazyPlaceStructure(StructureInfo data){
@@ -99,7 +138,6 @@ public final class NMSSupport {
         Region region = clipboard.getRegion();
         int width = region.getWidth();
         int length = region.getLength();
-        int height = region.getHeight();
         Location location = getRandomLocation(data.getWorld(), width, length,false);
         //offset
         Vector3 offset = data.getCenterOffset();
