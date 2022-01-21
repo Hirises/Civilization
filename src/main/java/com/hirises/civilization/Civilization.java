@@ -113,9 +113,12 @@ public final class Civilization extends JavaPlugin{
             }
             for(Player player : Bukkit.getOnlinePlayers()){
                 PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-                cache.operateStamina(ConfigManager.healStamina);
+                cache.operateStamina(ConfigManager.StaminaData.healStamina / 4);
+                if(!player.isSprinting() && !player.isJumping() && player.isSneaking()){
+                    cache.operateStamina(ConfigManager.StaminaData.additionalHealStamina / 4);
+                }
             }
-        }, 20, 20);
+        }, 5, 5);
     }
 
     @Override

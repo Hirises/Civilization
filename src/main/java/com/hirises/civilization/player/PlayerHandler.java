@@ -25,9 +25,11 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Objective;
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.*;
 
@@ -88,9 +90,13 @@ public class PlayerHandler implements Listener {
             return;
         }
         Player player = event.getPlayer();
+        if(player.isSwimming()){
+            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            cache.operateStamina(ConfigManager.StaminaData.swimmingStamina);
+        }
         if(player.isSprinting()){
             PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-            cache.operateStamina(ConfigManager.runStamina);
+            cache.operateStamina(ConfigManager.StaminaData.runStamina);
         }
     }
 
@@ -101,7 +107,7 @@ public class PlayerHandler implements Listener {
         }
         Player player = event.getPlayer();
         PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-        cache.operateStamina(ConfigManager.jumpStamina);
+        cache.operateStamina(ConfigManager.StaminaData.jumpStamina);
     }
 
     @EventHandler
@@ -111,7 +117,23 @@ public class PlayerHandler implements Listener {
         }
         Player player = event.getPlayer();
         PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-        cache.operateStamina(ConfigManager.miningStamina);
+        cache.operateStamina(ConfigManager.StaminaData.miningStamina);
+    }
+
+    @EventHandler
+    public void drinking(PlayerItemConsumeEvent event){
+        ItemStack item = event.getItem();
+        Player player = event.getPlayer();
+
+        if (ItemUtil.isExist(item)) {
+            if(NBTTagStore.containKey(item, Keys.StaminaHeal.toString())) {
+                ConfigManager.getCache(player.getUniqueId()).operateStamina(NBTTagStore.get(item, Keys.StaminaHeal.toString(), Integer.class));
+            }else if (ConfigManager.StaminaData.staminaHealMap.containsKey(item.getType())) {
+                ConfigManager.getCache(player.getUniqueId()).operateStamina(ConfigManager.StaminaData.staminaHealMap.get(item.getType()));
+            }else if (item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+                ConfigManager.getCache(player.getUniqueId()).operateStamina(ConfigManager.StaminaData.drinkingStamina);
+            }
+        }
     }
 
     @EventHandler
@@ -123,11 +145,11 @@ public class PlayerHandler implements Listener {
         Entity taker = event.getEntity();
         if(damager instanceof Player){
             PlayerCache cache = ConfigManager.getCache(damager.getUniqueId());
-            cache.operateStamina(ConfigManager.attackStamina);
+            cache.operateStamina(ConfigManager.StaminaData.attackStamina);
         }
         if(taker instanceof Player){
             PlayerCache cache = ConfigManager.getCache(taker.getUniqueId());
-            cache.operateStamina(ConfigManager.hitStamina);
+            cache.operateStamina(ConfigManager.StaminaData.hitStamina);
         }
     }
 

@@ -3,6 +3,7 @@ package com.hirises.civilization.config;
 public enum Keys{
     MoneyItem("Civilization_MoneyItem"),
     FreeShopItemIndex("Civilization_FreeShopItemIndex"),
+    StaminaHeal("Civilization_StaminaHeal"),
     ;
 
     private String key;

@@ -17,8 +17,8 @@ import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,16 +41,48 @@ public class ConfigManager {
 
     public static List<UUID> allUser = new ArrayList<>();
     private static ItemStack moneyItem;
-    public static int defaultStamina;
-    public static int runStamina;
-    public static int jumpStamina;
-    public static int attackStamina;
-    public static int hitStamina;
-    public static int miningStamina;
-    public static int healStamina;
-    public static int debuff1Stamina;
-    public static int debuff2Stamina;
-    public static ActionBarUnit staminaActionBar;
+
+    //region data classes
+
+    public class StaminaData {
+        public static int defaultStamina;
+        public static int runStamina;
+        public static int swimmingStamina;
+        public static int jumpStamina;
+        public static int attackStamina;
+        public static int hitStamina;
+        public static int miningStamina;
+        public static int healStamina;
+        public static int additionalHealStamina;
+        public static int drinkingStamina;
+        public static int debuff1Stamina;
+        public static int debuff2Stamina;
+        public static ActionBarUnit staminaActionBar;
+        public static Map<Material, Integer> staminaHealMap;
+
+
+        public static void load(){
+            defaultStamina = config.get(Integer.class, "스테미나.기본");
+            runStamina = config.get(Integer.class, "스테미나.달리기");
+            swimmingStamina = config.get(Integer.class, "스테미나.수영");
+            jumpStamina = config.get(Integer.class, "스테미나.점프");
+            attackStamina = config.get(Integer.class, "스테미나.공격");
+            hitStamina = config.get(Integer.class, "스테미나.데미지");
+            miningStamina = config.get(Integer.class, "스테미나.채광");
+            drinkingStamina = config.get(Integer.class, "스테미나.마시기");
+            healStamina = config.get(Integer.class, "스테미나.초당회복");
+            additionalHealStamina = config.get(Integer.class, "스테미나.웅크리기");
+            debuff1Stamina = config.get(Integer.class, "스테미나.디버프1");
+            debuff2Stamina = config.get(Integer.class, "스테미나.디버프2");
+            staminaActionBar = config.getOrDefault(new ActionBarUnit(), "스테미나.엑션바");
+            staminaHealMap = new HashMap<>();
+            for(String key : config.getKeys("스테미나.먹기")){
+                staminaHealMap.put(Material.valueOf(key), config.get(Integer.class, "스테미나.먹기." + key));
+            }
+        }
+    }
+
+    //endregion
 
     public static void init(){
         state.load(true);
@@ -88,16 +120,7 @@ public class ConfigManager {
             allUser = cache.getConfig().getStringList("모든참여자").stream().map(s -> UUID.fromString(s)).collect(Collectors.toList());
         }
 
-        defaultStamina = config.get(Integer.class, "스테미나.기본");
-        runStamina = config.get(Integer.class, "스테미나.달리기");
-        jumpStamina = config.get(Integer.class, "스테미나.점프");
-        attackStamina = config.get(Integer.class, "스테미나.공격");
-        hitStamina = config.get(Integer.class, "스테미나.데미지");
-        miningStamina = config.get(Integer.class, "스테미나.채광");
-        healStamina = config.get(Integer.class, "스테미나.초당회복");
-        debuff1Stamina = config.get(Integer.class, "스테미나.디버프1");
-        debuff2Stamina = config.get(Integer.class, "스테미나.디버프2");
-        staminaActionBar = config.getOrDefault(new ActionBarUnit(), "스테미나.엑션바");
+        StaminaData.load();
     }
 
     public static void save(){
