@@ -1,6 +1,7 @@
 package com.hirises.civilization.gui;
 
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.gui.ability.AbilityCategoryGUI;
 import com.hirises.civilization.gui.freeshop.FreeShopViewGUI;
 import com.hirises.core.flag.Flags;
 import com.hirises.core.inventory.AbstractGUI;
@@ -17,7 +18,7 @@ public class MainGUI extends AbstractGUI {
         GUIStateButton ability = new GUIStateButton("숙련도", "a");
         bind("a", ability);
         ability.bindOnStateChange((gui, pre, next) -> {
-
+            new AbilityCategoryGUI().open(player, gui);
         });
 
         GUIStateButton experience = new GUIStateButton("연구", "e");

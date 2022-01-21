@@ -113,16 +113,16 @@ public final class NMSSupport {
         if(world.getName().equalsIgnoreCase("Civilization")){
             y = world.get().getHighestBlockYAt(x, z, HeightMap.MOTION_BLOCKING_NO_LEAVES);
             y++;
-            while (AVOID_SPAWN_BLOCKS.contains(world.get().getBlockAt(x, y, z).getType())){
+            while (AVOID_SPAWN_BLOCKS.contains(world.get().getBlockAt(x, y, z).getType()) && y < 256){
                 y++;
             }
         }else{
             y = 100;
-            while (SPAWN_BLOCKS_NETHER.contains(world.get().getBlockAt(x, y, z).getType()) || y > 31){
+            while (SPAWN_BLOCKS_NETHER.contains(world.get().getBlockAt(x, y, z).getType()) && y > 31){
                 y--;
             }
             Material mat = world.get().getBlockAt(x, y, z).getType();
-            while ((!SPAWN_BLOCKS_NETHER.contains(mat) && !mat.equals(Material.LAVA)) || y > 31){
+            while ((!SPAWN_BLOCKS_NETHER.contains(mat) && !mat.equals(Material.LAVA)) && y > 31){
                 y--;
                 mat = world.get().getBlockAt(x, y, z).getType();
             }

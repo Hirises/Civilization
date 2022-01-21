@@ -69,7 +69,7 @@ public class OPCommand implements CommandExecutor, TabCompleter {
             case "reload": {
                 Util.broadcast(new TextComponent(ChatColor.RED + "리로드를 시작합니다"));
                 ConfigManager.init();
-                Util.broadcast(new TextComponent(ChatColor.GREEN + "완료"));
+                Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
                 break;
             }
         }

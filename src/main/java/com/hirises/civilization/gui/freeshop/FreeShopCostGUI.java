@@ -48,6 +48,7 @@ public class FreeShopCostGUI extends AbstractGUI {
         bind("o", output);
         output.bindOnClick((gui, i, i1, clickType, inventoryAction, guiEventResult) -> {
             AnvilInventory an = (AnvilInventory) gui.getInventory();
+            an.setRepairCost(0);
             String rawPriceString = an.getRenameText();
             if(NumberUtils.isNumber(rawPriceString)){
                 long price = Long.parseLong(rawPriceString);
