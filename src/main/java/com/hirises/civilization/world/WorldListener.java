@@ -5,16 +5,13 @@ import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.data.ChunkData;
 import com.hirises.civilization.data.Structure;
 import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Util;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -98,12 +95,13 @@ public class WorldListener implements Listener {
         if(!Civilization.isStart()){
             return;
         }
-        if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
+        if(event.getAction().isRightClick()){
             if(ItemUtil.isExist(event.getItem()) && event.getItem().getType().equals(Material.ENDER_EYE)){
+                event.setCancelled(true);
                 Block block = event.getClickedBlock();
                 if(block != null && block.getType().equals(Material.END_PORTAL_FRAME)){
-                    if(!NMSSupport.isConflict(block.getLocation(), "crack")){
-                        event.setCancelled(true);
+                    if(NMSSupport.isConflictStrict(block.getLocation(), "crack")){
+                        event.setCancelled(false);
                     }
                 }
             }
@@ -131,26 +129,22 @@ public class WorldListener implements Listener {
     }
 
     private static void runPortal(Entity entity, Location from, String targetWorld){
-        switch (targetWorld){
-            case "world_nether":{
-                if(from.getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
-                    entity.teleport(NetherPortal.getPortal(Civilization.world.getName(), from));
-                }else{
-                    entity.teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), from));
+        if(targetWorld.equalsIgnoreCase("world_the_end")){
+            Location location = new Location(Civilization.world_end.get(), 100.5, 49,0.5);
+            NMSSupport.setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
+            NMSSupport.setBlocks(location, -2, 0, -2, 5, 4, 5, Material.AIR);
+            entity.teleport(location);
+            if(entity instanceof Player){
+                if(LastHitEnderDragon == null){
+                    LastHitEnderDragon = entity.getUniqueId();
                 }
-                break;
             }
-            case "world_the_end":{
-                Location location = new Location(Civilization.world_end.get(), 100.5, 49,0.5);
-                NMSSupport.setBlocks(location, -2, -1, -2, 5, 1, 5, Material.OBSIDIAN);
-                NMSSupport.setBlocks(location, -2, 0, -2, 5, 4, 5, Material.AIR);
-                entity.teleport(location);
-                if(entity instanceof Player){
-                    if(LastHitEnderDragon == null){
-                        LastHitEnderDragon = entity.getUniqueId();
-                    }
-                }
-                break;
+            return;
+        }else{
+            if(from.getWorld().getName().equalsIgnoreCase("Civilization_Nether")){
+                entity.teleport(NetherPortal.getPortal(Civilization.world.getName(), from));
+            }else{
+                entity.teleport(NetherPortal.getPortal(Civilization.world_nether.getName(), from));
             }
         }
     }

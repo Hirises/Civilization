@@ -225,6 +225,22 @@ public final class NMSSupport {
         return false;
     }
 
+    public static boolean isConflictStrict(Location location, String type){
+        Pair<Integer, Integer> chunkPos = NMSSupport.toChunk(location.getX(), location.getZ());
+        ChunkData chunk = new ChunkData(location.getWorld().getName(), chunkPos.getLeft(), chunkPos.getRight());
+        if(ConfigManager.structureList.containsKey(chunk)){
+            Structure structure = ConfigManager.structureList.get(chunk);
+            if(structure.getType().startsWith(type)){
+                if(structure.getMinX() <= location.getX() && location.getX() <= structure.getMaxX() &&
+                        structure.getMinY() <= location.getY() && location.getY() <= structure.getMaxY() &&
+                        structure.getMinZ() <= location.getZ() && location.getZ() <= structure.getMaxZ()){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static boolean isConflict(ChunkData chunk, String type){
         if(ConfigManager.structureList.containsKey(chunk)){
             if(ConfigManager.structureList.get(chunk).getType().startsWith(type)){

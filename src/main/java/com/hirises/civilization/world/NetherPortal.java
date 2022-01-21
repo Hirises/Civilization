@@ -182,6 +182,9 @@ public class NetherPortal {
 
             setBlock(location, 1, 3, 0, Material.NETHER_PORTAL);
             setBlock(location, 2, 3, 0, Material.NETHER_PORTAL);
+
+            NMSSupport.setBlocks(location, 0, 1, 1, 4, 4, 1, Material.AIR);
+            NMSSupport.setBlocks(location, 0, 1, -1, 4, 4, 1, Material.AIR);
         }else{
             setBlock(location, 0, 0, 0, Material.OBSIDIAN);
             setBlock(location, 0, 0, 1, Material.OBSIDIAN);
@@ -219,6 +222,9 @@ public class NetherPortal {
 
             setAxisX(location, 0, 3, 1);
             setAxisX(location, 0, 3, 2);
+
+            NMSSupport.setBlocks(location, 1, 1, 0, 1, 4, 4, Material.AIR);
+            NMSSupport.setBlocks(location, -1, 1, 0, 1, 4, 4, Material.AIR);
         }
     }
 
