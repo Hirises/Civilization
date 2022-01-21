@@ -25,13 +25,12 @@ import java.util.stream.Collectors;
 
 public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
-    public static YamlStore prefix = new YamlStore(Civilization.getInst(), "Saves/prefix.yml");
+    public static YamlStore prefix = new YamlStore(Civilization.getInst(), "prefix.yml");
     public static YamlStore ability = new YamlStore(Civilization.getInst(), "ability.yml");
     public static int killRange;
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
     public static DataCache<AbilityInfo> abilityInfo = new DataCache<>(ability, "숙련도", AbilityInfo::new);
     public static DataCache<StructureInfo> structureData = new DataCache<>(config, "구조물", StructureInfo::new);
-    public static DataCache<PrefixInfo> prefixInfo = new DataCache<>(prefix, "", PrefixInfo::new);
     public static PlayerCacheStore<PlayerCache> cacheStore;
 
     public static YamlStore cache = new YamlStore(Civilization.getInst(), "Saves/cache.yml");
@@ -40,10 +39,13 @@ public class ConfigManager {
     public static DirDataCache<LootTableUnit> lootTable = new DirDataCache(Civilization.getInst(), "Schematics", LootTableUnit::new);
     public static List<FreeShopItemUnit> shopItem = new ArrayList<>();
     public static final Map<ChunkData, Structure> structureList = new HashMap<>();
+    public static Map<PrefixType, PrefixInfo> prefixInfoMap = new HashMap<>();
+    private static final Map<PrefixType, UUID> prefixFinisher = new HashMap<>();
 
     public static List<UUID> allUser = new ArrayList<>();
     private static ItemStack moneyItem;
     public static ItemStack abilityItem;
+    public static ItemStack prefixItem;
 
     //region data classes
 
@@ -107,12 +109,18 @@ public class ConfigManager {
 
         menu.load();
         structureData.load();
-        prefixInfo.load();
         abilityInfo.load();
 
         cacheStore = new PlayerCacheStore<>(PlayerCache::new);
         cacheStore.checkExistAll();
 
+
+        DataCache<PrefixInfo> prefixInfo = new DataCache<>(prefix, "칭호", PrefixInfo::new);
+        prefixInfo.load();
+        prefixInfoMap.clear();
+        for(PrefixInfo info : prefixInfo.getSafeDataUnitMap().values()){
+            prefixInfoMap.put(info.getType(), info);
+        }
         shopItem.clear();
         for(String key : data.getKeys("자유시장")){
             shopItem.add(data.getOrDefault(new FreeShopItemUnit(), "자유시장." + key));
@@ -121,9 +129,15 @@ public class ConfigManager {
         for(String key : data.getKeys("구조물")){
             addStructure(data.getOrDefault(new Structure(), "구조물." + key));
         }
+        prefixFinisher.clear();
+        for(PrefixType type : PrefixType.values()){
+            String rawUUID = cache.getOrDefault(String.class, "", "칭호." + type.getKey());
+            prefixFinisher.put(type, rawUUID.trim().isEmpty() ? null : UUID.fromString(rawUUID));
+        }
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
         abilityItem = ability.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();
+        prefixItem = prefix.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();
 
         String uuid = state.get(String.class, "lastHitEnderDragon");
         WorldListener.LastHitEnderDragon = uuid.trim().equalsIgnoreCase("") ? null : UUID.fromString(uuid);
@@ -193,8 +207,32 @@ public class ConfigManager {
     }
 
     public static void savePrefix(){
-        for(PrefixInfo info : prefixInfo.getSafeDataUnitMap().values()){
-            prefix.upsert(info, String.valueOf(info.getId()));
+        for(PrefixType type : prefixFinisher.keySet()){
+            UUID uuid = prefixFinisher.get(type);
+            cache.upsert(uuid == null ? "" : uuid.toString(), "칭호." + type.getKey());
         }
+        cache.save();
+    }
+
+    public static boolean givenPrefix(PrefixType type){
+        return prefixFinisher.getOrDefault(type, null) != null;
+    }
+
+    public static boolean hasPrefix(PrefixType type, UUID uuid){
+        if(!givenPrefix(type)){
+            return false;
+        }
+        return prefixFinisher.get(type).equals(uuid);
+    }
+
+    public static void givePrefix(PrefixType type, UUID uuid){
+        prefixFinisher.put(type, uuid);
+    }
+
+    public static void resetPrefix(){
+        for(PrefixType type : prefixFinisher.keySet()){
+            prefixFinisher.put(type, null);
+        }
+        cache.removeKey("칭호");
     }
 }

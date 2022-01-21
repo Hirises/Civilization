@@ -102,7 +102,7 @@ public class AbilityCategoryGUI extends AbstractGUI {
         AbilityInfo info = ConfigManager.abilityInfo.get(type.getName());
         item.setType(info.getItem());
         ItemUtil.remapString(item, Util.toRemap("type", type.getName(), "howToGet", info.getHowToGet(), "curEffects", info.getEffectString(),
-            "level", String.valueOf( ConfigManager.getCache(player.getUniqueId()).getAbilityLevel(type)) ));
+            "level", String.valueOf( ConfigManager.getCache(player.getUniqueId()).getAbilityLevel(type) ), "cost", String.valueOf(info.getCost()) ));
         return item;
     }
 

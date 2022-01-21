@@ -1,61 +1,47 @@
 package com.hirises.civilization.data;
 
-import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.unit.DataUnit;
 import com.hirises.core.store.YamlStore;
-import com.hirises.core.util.Util;
-import org.bukkit.inventory.ItemStack;
-
-import java.util.UUID;
+import org.bukkit.Material;
 
 public class PrefixInfo implements DataUnit {
-    ItemStack item;
     String name;
-    int id;
-    UUID finisher;
+    Material material;
+    String effect;
+    String trigger;
+    PrefixType type;
 
     @Override
     public void load(YamlStore yml, String root) {
+        this.type = PrefixType.valueOf(yml.get(String.class, root + ".타입"));
         this.name = yml.get(String.class, root + ".이름");
-        if(yml.containKey(root + ".완료")){
-            this.finisher = UUID.fromString(yml.get(String.class, root + ".완료"));
-        }else{
-            this.finisher = null;
-        }
-        this.id = Integer.parseInt(root.substring(root.lastIndexOf(".") + 1));
-        this.item = yml.getOrDefault(new ItemStackUnit(), root + ".아이템").getItem();
+        this.material = Material.valueOf(yml.get(String.class, root + ".코드"));
+        this.effect = yml.get(String.class, root + ".효과");
+        this.trigger = yml.get(String.class, root + ".조건");
     }
 
     @Override
     public void save(YamlStore yml, String root) {
-        if(isFinish()){
-            yml.set(root + ".완료", finisher.toString());
-        }else{
-            yml.removeKey(root + ".완료");
-        }
+        //ignore
     }
 
-    public void setFinisher(UUID finisher) {
-        this.finisher = finisher;
-    }
-
-    public UUID getFinisher() {
-        return finisher;
-    }
-
-    public boolean isFinish(){
-        return finisher != null;
-    }
-
-    public ItemStack getItem() {
-        return item;
+    public PrefixType getType() {
+        return type;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getId() {
-        return id;
+    public Material getMaterial() {
+        return material;
+    }
+
+    public String getEffect() {
+        return effect;
+    }
+
+    public String getTrigger() {
+        return trigger;
     }
 }
