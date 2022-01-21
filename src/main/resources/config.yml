@@ -13,6 +13,7 @@
   공격: -700
   데미지: -300
   채광: -700
+  설치: -150
   초당회복: 200
   웅크리기: 300
   마시기: 1500
@@ -30,7 +31,7 @@
     메세지: '&f{amount}'
     지속시간: 3
     일회성: true
-    길이: 50
+    길이: 75
 offset:
   point:  #월드에딧 카피할때 기준점 때문에 생긴 offset
     x: -1
@@ -69,7 +70,7 @@ offset:
       - '2'
   altar:
     name: 'altar'
-    count: 4
+    count: 5
     world: 'Civilization'
     variants:
       - '1'
@@ -92,12 +93,16 @@ offset:
     world: 'Civilization'
     variants:
       - '2'
+  temple:
+    name: 'temple'
+    count: 5
+    world: 'Civilization_Nether'
+    variants:
+      - '1'
 초반무적:
-  시간: 0
   분: 5
   초: 0
 리스폰무적:
-  시간: 0
   분: 0
   초: 15
 현상금:
@@ -129,6 +134,9 @@ offset:
     개수: 3
   '4':
     코드: 'OAK_BOAT'
+  '5':
+    코드: 'TORCH'
+    개수: 32
 승리:
   타이틀1:
     이름: '승리'

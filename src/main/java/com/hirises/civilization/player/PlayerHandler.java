@@ -8,20 +8,18 @@ import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
 import com.hirises.civilization.world.NMSSupport;
 import com.hirises.core.data.TimeUnit;
-import com.hirises.core.display.Display;
 import com.hirises.core.display.ScoreBoardHandler;
 import com.hirises.core.event.GUIUpdateEvent;
 import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.ItemUtil;
-import com.hirises.core.util.Util;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +27,6 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Objective;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.*;
 
@@ -121,7 +118,20 @@ public class PlayerHandler implements Listener {
     }
 
     @EventHandler
+    public void placing(BlockPlaceEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Player player = event.getPlayer();
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        cache.operateStamina(ConfigManager.StaminaData.placeStamina);
+    }
+
+    @EventHandler
     public void drinking(PlayerItemConsumeEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
         ItemStack item = event.getItem();
         Player player = event.getPlayer();
 

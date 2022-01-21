@@ -52,6 +52,7 @@ public class ConfigManager {
         public static int attackStamina;
         public static int hitStamina;
         public static int miningStamina;
+        public static int placeStamina;
         public static int healStamina;
         public static int additionalHealStamina;
         public static int drinkingStamina;
@@ -71,6 +72,7 @@ public class ConfigManager {
             attackStamina = config.get(Integer.class, "스테미나.공격");
             hitStamina = config.get(Integer.class, "스테미나.데미지");
             miningStamina = config.get(Integer.class, "스테미나.채광");
+            placeStamina = config.get(Integer.class, "스테미나.설치");
             drinkingStamina = config.get(Integer.class, "스테미나.마시기");
             healStamina = config.get(Integer.class, "스테미나.초당회복");
             additionalHealStamina = config.get(Integer.class, "스테미나.웅크리기");
