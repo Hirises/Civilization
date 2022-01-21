@@ -26,8 +26,10 @@ import java.util.stream.Collectors;
 public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
     public static YamlStore prefix = new YamlStore(Civilization.getInst(), "Saves/prefix.yml");
+    public static YamlStore ability = new YamlStore(Civilization.getInst(), "ability.yml");
     public static int killRange;
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
+    public static DataCache<AbilityInfo> abilityInfo = new DataCache<>(ability, "숙련도", AbilityInfo::new);
     public static DataCache<StructureInfo> structureData = new DataCache<>(config, "구조물", StructureInfo::new);
     public static DataCache<PrefixInfo> prefixInfo = new DataCache<>(prefix, "", PrefixInfo::new);
     public static PlayerCacheStore<PlayerCache> cacheStore;
@@ -41,6 +43,7 @@ public class ConfigManager {
 
     public static List<UUID> allUser = new ArrayList<>();
     private static ItemStack moneyItem;
+    public static ItemStack abilityItem;
 
     //region data classes
 
@@ -105,6 +108,7 @@ public class ConfigManager {
         menu.load();
         structureData.load();
         prefixInfo.load();
+        abilityInfo.load();
 
         cacheStore = new PlayerCacheStore<>(PlayerCache::new);
         cacheStore.checkExistAll();
@@ -119,6 +123,7 @@ public class ConfigManager {
         }
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
+        abilityItem = ability.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();
 
         String uuid = state.get(String.class, "lastHitEnderDragon");
         WorldListener.LastHitEnderDragon = uuid.trim().equalsIgnoreCase("") ? null : UUID.fromString(uuid);

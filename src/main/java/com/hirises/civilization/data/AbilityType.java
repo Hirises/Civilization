@@ -2,7 +2,6 @@ package com.hirises.civilization.data;
 
 public enum AbilityType {
     Move("이동"),
-    Fight("전투"),
     Mine("건축"),
     Craft("공예"),
     Farm("농사"),
@@ -10,6 +9,10 @@ public enum AbilityType {
     Fishing("낚시"),
     Potion("양조"),
     Intelligent("지능"),
+
+    Sword("칼"),
+    Axe("도끼"),
+    Bow("원거리"),
     ;
 
     private String name;

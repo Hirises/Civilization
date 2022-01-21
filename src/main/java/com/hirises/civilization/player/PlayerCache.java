@@ -2,6 +2,7 @@ package com.hirises.civilization.player;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.data.AbilityType;
 import com.hirises.core.display.Display;
 import com.hirises.core.store.IPlayerCache;
 import com.hirises.core.util.Util;
@@ -12,6 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,6 +25,7 @@ public class PlayerCache implements IPlayerCache {
     private Location spawn;
     private int stamina;
     private Player player;
+    private Map<AbilityType, Integer> abilityLevelMap;
 
     public PlayerCache(UUID uuid){
         this.uuid = uuid;
@@ -30,19 +34,28 @@ public class PlayerCache implements IPlayerCache {
     @Override
     public void onLoad() {
         long defaultMoney = ConfigManager.config.get(Long.class, "기본금");
-        this.spawn = ConfigManager.cache.getConfig().getLocation(uuid.toString() + ".스폰");
-        this.money = ConfigManager.cache.getOrDefault(Long.class, defaultMoney, uuid.toString() + ".돈");
-        this.kill = ConfigManager.cache.getOrDefault(Integer.class, 0, uuid.toString() + ".킬");
-        this.stamina = ConfigManager.cache.getOrDefault(Integer.class, ConfigManager.StaminaData.defaultStamina, uuid.toString() + ".스테미나");
+        final String root = uuid.toString();
+        this.spawn = ConfigManager.cache.getConfig().getLocation(root + ".스폰");
+        this.money = ConfigManager.cache.getOrDefault(Long.class, defaultMoney, root + ".돈");
+        this.kill = ConfigManager.cache.getOrDefault(Integer.class, 0, root + ".킬");
+        this.stamina = ConfigManager.cache.getOrDefault(Integer.class, ConfigManager.StaminaData.defaultStamina, root + ".스테미나");
         this.player = Bukkit.getPlayer(uuid);
+        abilityLevelMap = new HashMap<>();
+        for(AbilityType type : AbilityType.values()){
+            abilityLevelMap.put(type, ConfigManager.cache.getOrDefault(Integer.class, 0, root + ".숙련도." + type.getName()));
+        }
     }
 
     @Override
     public void onSave() {
-        ConfigManager.cache.getConfig().set(uuid.toString() + ".스폰", this.spawn);
-        ConfigManager.cache.set(uuid.toString() + ".돈", this.money);
-        ConfigManager.cache.set(uuid.toString() + ".킬", this.kill);
-        ConfigManager.cache.set(uuid.toString() + ".스테미나", this.stamina);
+        final String root = uuid.toString();
+        ConfigManager.cache.getConfig().set(root + ".스폰", this.spawn);
+        ConfigManager.cache.set(root + ".돈", this.money);
+        ConfigManager.cache.set(root + ".킬", this.kill);
+        ConfigManager.cache.set(root + ".스테미나", this.stamina);
+        for(AbilityType type : AbilityType.values()){
+            ConfigManager.cache.set(root + ".숙련도." + type.getName(), abilityLevelMap.get(type));
+        }
     }
 
     @Override
@@ -160,5 +173,16 @@ public class PlayerCache implements IPlayerCache {
 
     public void operateStamina(int amount){
         setStamina(getStamina() + amount);
+    }
+
+    public int getAbilityLevel(AbilityType type){
+        return abilityLevelMap.get(type);
+    }
+
+    public void addAbilityLevel(AbilityType type){
+        int curLevel = getAbilityLevel(type);
+        if(curLevel < ConfigManager.abilityInfo.get(type.getName()).getMaxLevel()){
+            abilityLevelMap.put(type, curLevel + 1);
+        }
     }
 }
