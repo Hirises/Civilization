@@ -19,14 +19,18 @@
   먹기:
     HONEY_BOTTLE: 7000
     MILK_BUCKET: 3000
+    SWEET_BERRIES: 200
+    GLOW_BERRIES: 200
   디버프1: 2500
   디버프2: 500
+  버프: 9000
   엑션바:
     가중치: 50
     이름: '스테미나'
-    메세지: '&f스테미나: &6{amount}'
+    메세지: '&f{amount}'
     지속시간: 3
     일회성: true
+    길이: 50
 offset:
   point:  #월드에딧 카피할때 기준점 때문에 생긴 offset
     x: -1
@@ -121,6 +125,9 @@ offset:
     코드: 'BREAD'
     개수: 16
   '3':
+    코드: 'HONEY_BOTTLE'
+    개수: 3
+  '4':
     코드: 'OAK_BOAT'
 승리:
   타이틀1:

@@ -57,6 +57,8 @@ public class ConfigManager {
         public static int drinkingStamina;
         public static int debuff1Stamina;
         public static int debuff2Stamina;
+        public static int buffStamina;
+        public static int staminaBarLength;
         public static ActionBarUnit staminaActionBar;
         public static Map<Material, Integer> staminaHealMap;
 
@@ -74,7 +76,9 @@ public class ConfigManager {
             additionalHealStamina = config.get(Integer.class, "스테미나.웅크리기");
             debuff1Stamina = config.get(Integer.class, "스테미나.디버프1");
             debuff2Stamina = config.get(Integer.class, "스테미나.디버프2");
+            buffStamina = config.get(Integer.class, "스테미나.버프");
             staminaActionBar = config.getOrDefault(new ActionBarUnit(), "스테미나.엑션바");
+            staminaBarLength = config.get(Integer.class, "스테미나.엑션바.길이");
             staminaHealMap = new HashMap<>();
             for(String key : config.getKeys("스테미나.먹기")){
                 staminaHealMap.put(Material.valueOf(key), config.get(Integer.class, "스테미나.먹기." + key));

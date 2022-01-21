@@ -6,6 +6,7 @@ import com.hirises.core.display.Display;
 import com.hirises.core.store.IPlayerCache;
 import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -120,23 +121,41 @@ public class PlayerCache implements IPlayerCache {
         }
         this.stamina = stamina;
         if(player != null){
-            Display.sendDisplayUnit(player, ConfigManager.StaminaData.staminaActionBar, Util.toRemap("amount", String.valueOf(getStamina())));
-
             if(this.stamina <= ConfigManager.StaminaData.debuff2Stamina){
                 Bukkit.getScheduler().runTask(Civilization.getInst(), () -> {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 70, 1, false, false, true));
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 70, 1, false, false, true));
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 70, 1, false, false, true));
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 70, 1, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 1, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 40, 1, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 40, 1, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 40, 1, false, false, true));
                 });
+                Display.sendDisplayUnit(player, ConfigManager.StaminaData.staminaActionBar, Util.toRemap("amount", getStaminaBar(ChatColor.RED, this.stamina)));
             }else if(this.stamina <= ConfigManager.StaminaData.debuff1Stamina){
                 Bukkit.getScheduler().runTask(Civilization.getInst(), () -> {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 70, 0, false, false, true));
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 70, 0, false, false, true));
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 70, 0, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 0, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 40, 0, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 40, 0, false, false, true));
                 });
+                Display.sendDisplayUnit(player, ConfigManager.StaminaData.staminaActionBar, Util.toRemap("amount", getStaminaBar(ChatColor.YELLOW, this.stamina)));
+            }else if(this.stamina <= ConfigManager.StaminaData.buffStamina){
+                Display.sendDisplayUnit(player, ConfigManager.StaminaData.staminaActionBar, Util.toRemap("amount", getStaminaBar(ChatColor.GREEN, this.stamina)));
+            }else{
+                Display.sendDisplayUnit(player, ConfigManager.StaminaData.staminaActionBar, Util.toRemap("amount", getStaminaBar(ChatColor.AQUA, this.stamina)));
             }
         }
+    }
+
+    private String getStaminaBar(ChatColor color, int amount){
+        StringBuilder builder = new StringBuilder();
+        builder.append(color);
+        amount = (amount * ConfigManager.StaminaData.staminaBarLength) / ConfigManager.StaminaData.defaultStamina;
+        for(int i = 0; i < ConfigManager.StaminaData.staminaBarLength; i++){
+            if(i < amount){
+                builder.append("|");
+            }else{
+                break;
+            }
+        }
+        return builder.toString();
     }
 
     public void operateStamina(int amount){
