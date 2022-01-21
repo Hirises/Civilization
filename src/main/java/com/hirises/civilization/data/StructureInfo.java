@@ -12,14 +12,14 @@ public class StructureInfo implements DataUnit {
     public static Vector3 defaultPointOffset;
     public static Vector3 defaultCenterOffset;
 
-    String prefix;
-    int count;
-    String world;
-    LootTableUnit loots;
-    List<String> variants;
-    String rootKey;
-    Vector3 pointOffset;
-    Vector3 centerOffset;
+    private String prefix;
+    private int count;
+    private String world;
+    private LootTableUnit loots;
+    private List<String> variants;
+    private String rootKey;
+    private Vector3 pointOffset;
+    private Vector3 centerOffset;
 
     public StructureInfo(){
 

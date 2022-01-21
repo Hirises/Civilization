@@ -5,11 +5,11 @@ import com.hirises.core.store.YamlStore;
 import org.bukkit.Material;
 
 public class PrefixInfo implements DataUnit {
-    String name;
-    Material material;
-    String effect;
-    String trigger;
-    PrefixType type;
+    private String name;
+    private Material material;
+    private String effect;
+    private String trigger;
+    private PrefixType type;
 
     @Override
     public void load(YamlStore yml, String root) {

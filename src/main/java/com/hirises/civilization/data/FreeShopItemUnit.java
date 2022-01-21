@@ -14,10 +14,10 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class FreeShopItemUnit implements DataUnit {
-    ItemStack originItem;
-    UUID registerUUID;
-    String registerName;
-    long price;
+    private ItemStack originItem;
+    private UUID registerUUID;
+    private String registerName;
+    private long price;
 
     public FreeShopItemUnit(){
 

@@ -14,16 +14,16 @@ import org.bukkit.block.Chest;
 import org.bukkit.inventory.ItemStack;
 
 public class Structure implements DataUnit {
-    int minX;
-    int minY;
-    int minZ;
-    int maxX;
-    int maxY;
-    int maxZ;
-    ChunkData minChunk;
-    StructureInfo info;
-    String variant;
-    boolean placed;
+    private int minX;
+    private int minY;
+    private int minZ;
+    private int maxX;
+    private int maxY;
+    private int maxZ;
+    private ChunkData minChunk;
+    private StructureInfo info;
+    private String variant;
+    private boolean placed;
 
     public Structure(){
 

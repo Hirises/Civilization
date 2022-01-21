@@ -8,6 +8,7 @@ import com.hirises.civilization.data.StructureInfo;
 import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
+import com.hirises.civilization.world.AbilityListener;
 import com.hirises.civilization.world.NMSSupport;
 import com.hirises.civilization.world.PrefixListener;
 import com.hirises.civilization.world.WorldListener;
@@ -96,6 +97,7 @@ public final class Civilization extends JavaPlugin{
 
         Bukkit.getPluginManager().registerEvents(new WorldListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PrefixListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new AbilityListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerHandler(), plugin);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
@@ -353,6 +355,8 @@ public final class Civilization extends JavaPlugin{
 
     //endregion
 
+    //region addon
+
     public static void genStructure(){
         for(StructureInfo info : ConfigManager.structureData.getSafeDataUnitMap().values()){
             for(int i = 0; i < info.getCount(); i++){
@@ -416,6 +420,8 @@ public final class Civilization extends JavaPlugin{
         ConfigManager.allUser.add(player.getUniqueId());
         ConfigManager.saveUsers();
     }
+
+    //endregion
 
     private static void deleteWalk(Path path){
         try {
