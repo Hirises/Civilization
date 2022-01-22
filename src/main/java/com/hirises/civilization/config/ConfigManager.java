@@ -165,7 +165,7 @@ public class ConfigManager {
         return structure;
     }
 
-    public static void addStructure(Structure structure){
+    public static Structure addStructure(Structure structure){
         Pair<Integer, Integer> minChunkPos = NMSSupport.toChunk(structure.getMinX(), structure.getMinZ());
         Pair<Integer, Integer> maxChunkPos = NMSSupport.toChunk(structure.getMaxX(), structure.getMaxZ());
 
@@ -174,6 +174,8 @@ public class ConfigManager {
                 structureList.put(new ChunkData(structure.getStructureInfo().getWorldName(), x, z), structure);
             }
         }
+
+        return structure;
     }
 
     public static PlayerCache getCache(UUID uuid){

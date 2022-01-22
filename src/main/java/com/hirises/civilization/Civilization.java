@@ -8,10 +8,7 @@ import com.hirises.civilization.data.StructureInfo;
 import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.player.PlayerHandler;
 import com.hirises.civilization.data.CivilizationWorld;
-import com.hirises.civilization.world.AbilityListener;
-import com.hirises.civilization.world.NMSSupport;
-import com.hirises.civilization.world.PrefixListener;
-import com.hirises.civilization.world.WorldListener;
+import com.hirises.civilization.world.*;
 import com.hirises.core.data.AlertUnit;
 import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.TimeUnit;
@@ -98,6 +95,7 @@ public final class Civilization extends JavaPlugin{
         Bukkit.getPluginManager().registerEvents(new WorldListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PrefixListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new AbilityListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new StructureListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerHandler(), plugin);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
