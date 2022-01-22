@@ -12,6 +12,9 @@
   가중치: 30
   메세지: '&c{type} 숙련도 {level}레벨 이상이 필요합니다'
 제한:
+  특수제작:
+    Craft:
+      Crack_Compass: 3
   제작:
     Craft:
       IRON_HELMET: 3

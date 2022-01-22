@@ -29,6 +29,7 @@ public class ConfigManager {
     public static YamlStore config = new YamlStore(Civilization.getInst(), "config.yml");
     public static YamlStore prefix = new YamlStore(Civilization.getInst(), "prefix.yml");
     public static YamlStore ability = new YamlStore(Civilization.getInst(), "ability.yml");
+    public static YamlStore craft = new YamlStore(Civilization.getInst(), "craft.yml");
     public static int killRange;
     public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
     public static DataCache<AbilityInfo> abilityInfo = new DataCache<>(ability, "숙련도", AbilityInfo::new);
@@ -54,6 +55,7 @@ public class ConfigManager {
     public static Map<EntityType, Map<AbilityType, Integer>> entityRightClickLimitMap = new HashMap<>();
     public static Map<Material, Map<AbilityType, Integer>> placeLimitMap = new HashMap<>();
     public static Map<Material, Map<AbilityType, Integer>> craftLimitMap = new HashMap<>();
+    public static Map<String, Map<AbilityType, Integer>> magicCraftLimitMap = new HashMap<>();
 
     //region data classes
 
@@ -184,6 +186,19 @@ public class ConfigManager {
                         .put(type, ability.get(Integer.class, "제한.제작." + typeKey +"." + matKey));
             }
         }
+        magicCraftLimitMap.clear();
+        for(String typeKey : ability.getKeys("제한.특수제작")){
+            AbilityType type = AbilityType.valueOf(typeKey);
+            for(String key : ability.getKeys("제한.특수제작." + typeKey)){
+                magicCraftLimitMap.putIfAbsent(key, new HashMap<>());
+                magicCraftLimitMap.get(key)
+                        .put(type, ability.get(Integer.class, "제한.특수제작." + typeKey + "." + key));
+            }
+        }
+
+        DataCache<RecipeInfo> recipes = new DataCache<>(craft, "", RecipeInfo::new);
+        recipes.load();
+        recipes.getSafeDataUnitMap().values().forEach(value -> value.register());
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
         abilityItem = ability.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();

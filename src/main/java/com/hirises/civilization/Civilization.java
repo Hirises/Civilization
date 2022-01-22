@@ -243,21 +243,27 @@ public final class Civilization extends JavaPlugin{
             WorldCreator creator = new WorldCreator(WORLD_NAME);
             world = new CivilizationWorld(Bukkit.createWorld(creator.type(WorldType.NORMAL).environment(World.Environment.NORMAL)), worldSize);
             world.get().setGameRule(GameRule.KEEP_INVENTORY, true);
+            world.get().setGameRule(GameRule.NATURAL_REGENERATION, false);
             world.get().setDifficulty(Difficulty.HARD);
+            world.get().setSpawnLocation(0, 0, 0);
 
             Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                 Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "2/3"));
                 WorldCreator creator_nether = new WorldCreator(WORLD_NETHER_NAME);
                 world_nether = new CivilizationWorld(Bukkit.createWorld(creator_nether.type(WorldType.NORMAL).environment(World.Environment.NETHER)), (float)worldSize / 8);
                 world_nether.get().setGameRule(GameRule.KEEP_INVENTORY, true);
+                world_nether.get().setGameRule(GameRule.NATURAL_REGENERATION, false);
                 world_nether.get().setDifficulty(Difficulty.HARD);
+                world_nether.get().setSpawnLocation(0, 0, 0);
 
                 Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                     Util.broadcast(new TextComponent(ChatColor.YELLOW + "월드를 생성합니다... " + ChatColor.GRAY + "3/3"));
                     WorldCreator creator_theEnd = new WorldCreator(WORLD_END_NAME);
                     world_end = new CivilizationWorld(Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END)), 1000);
                     world_end.get().setGameRule(GameRule.KEEP_INVENTORY, true);
+                    world_end.get().setGameRule(GameRule.NATURAL_REGENERATION, false);
                     world_end.get().setDifficulty(Difficulty.HARD);
+                    world_end.get().setSpawnLocation(0, 0, 0);
 
                     Map<Player, Location> spawn = new HashMap<>();
                     for(Player player : Bukkit.getOnlinePlayers()){

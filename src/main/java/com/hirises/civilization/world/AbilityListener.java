@@ -7,6 +7,7 @@ import com.hirises.civilization.data.AbilityType;
 import com.hirises.civilization.player.PlayerCache;
 import com.hirises.core.display.Display;
 import com.hirises.core.store.MetaDataStore;
+import com.hirises.core.store.NBTTagStore;
 import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
@@ -21,6 +22,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.spigotmc.event.entity.EntityMountEvent;
 
 public class AbilityListener implements Listener {
@@ -31,9 +33,17 @@ public class AbilityListener implements Listener {
         }
         Player player = (Player) event.getWhoClicked();
         PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-        if(!cache.checkAbilityLevel(ConfigManager.craftLimitMap, event.getRecipe().getResult().getType())){
+        ItemStack item = event.getRecipe().getResult();
+        if(NBTTagStore.containKey(item, Keys.CustomItem.toString())
+                && !cache.checkAbilityLevel(ConfigManager.magicCraftLimitMap, NBTTagStore.get(item, Keys.CustomItem.toString(), String.class))) {
             event.setCancelled(true);
-            Pair<AbilityType, Integer> reason = cache.getLackAbilityLevel(ConfigManager.craftLimitMap, event.getRecipe().getResult().getType());
+            Pair<AbilityType, Integer> reason = cache.getLackAbilityLevel(ConfigManager.magicCraftLimitMap,
+                    NBTTagStore.get(item, Keys.CustomItem.toString(), String.class));
+            Display.sendDisplayUnit(player, ConfigManager.lackLevelMessage,
+                    Util.toRemap("type", reason.getLeft().getName(), "level", String.valueOf(reason.getRight())));
+        }else if(!cache.checkAbilityLevel(ConfigManager.craftLimitMap, item.getType())){
+            event.setCancelled(true);
+            Pair<AbilityType, Integer> reason = cache.getLackAbilityLevel(ConfigManager.craftLimitMap, item.getType());
             Display.sendDisplayUnit(player, ConfigManager.lackLevelMessage,
                     Util.toRemap("type", reason.getLeft().getName(), "level", String.valueOf(reason.getRight())));
         }

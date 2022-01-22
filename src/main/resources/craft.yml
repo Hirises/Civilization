@@ -1,0 +1,19 @@
+'1':
+  키: 'Crack_Compass'
+  타입: 'Shape'
+  모양: |
+    . a .
+    . c .
+    . e .
+  심볼:
+    a:
+      코드: 'AMETHYST_SHARD'
+    c:
+      코드: 'COMPASS'
+    e:
+      코드: 'ENDER_EYE'
+  결과:
+    코드: 'COMPASS'
+    반짝임: true
+    NBT:
+      Civilization_CustomItem: 'Crack_Compass'
