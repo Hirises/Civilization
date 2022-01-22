@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
 import com.hirises.civilization.config.Keys;
+import com.hirises.civilization.data.AbilityType;
 import com.hirises.civilization.gui.MainGUI;
 import com.hirises.civilization.gui.PrizeViewGUI;
 import com.hirises.civilization.world.NMSSupport;
@@ -16,16 +17,19 @@ import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scoreboard.Objective;
 
 import java.util.*;
@@ -87,13 +91,13 @@ public class PlayerHandler implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        if(player.isSwimming()){
+        if(player.isInWater() || player.isInLava()){
             PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-            cache.operateStamina(ConfigManager.StaminaData.swimmingStamina);
+            cache.operateStamina(ConfigManager.StaminaData.swimmingStamina + cache.getStaminaReduce(AbilityType.Move, "수영"));
         }
         if(player.isSprinting()){
             PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-            cache.operateStamina(ConfigManager.StaminaData.runStamina);
+            cache.operateStamina(ConfigManager.StaminaData.runStamina + cache.getStaminaReduce(AbilityType.Move, "달리기"));
         }
     }
 
@@ -104,32 +108,41 @@ public class PlayerHandler implements Listener {
         }
         Player player = event.getPlayer();
         PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-        cache.operateStamina(ConfigManager.StaminaData.jumpStamina);
+        cache.operateStamina(ConfigManager.StaminaData.jumpStamina + cache.getStaminaReduce(AbilityType.Move, "점프"));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void mining(BlockBreakEvent event){
         if(!Civilization.isStart()){
             return;
         }
-        Player player = event.getPlayer();
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-        cache.operateStamina(ConfigManager.StaminaData.miningStamina);
-    }
-
-    @EventHandler
-    public void placing(BlockPlaceEvent event){
-        if(!Civilization.isStart()){
+        if(event.isCancelled()){
             return;
         }
         Player player = event.getPlayer();
         PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
-        cache.operateStamina(ConfigManager.StaminaData.placeStamina);
+        cache.operateStamina(ConfigManager.StaminaData.miningStamina + cache.getStaminaReduce(AbilityType.Mine, "채광"));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
+    public void placing(BlockPlaceEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        if(event.isCancelled()){
+            return;
+        }
+        Player player = event.getPlayer();
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        cache.operateStamina(ConfigManager.StaminaData.placeStamina + cache.getStaminaReduce(AbilityType.Mine, "설치"));
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
     public void drinking(PlayerItemConsumeEvent event){
         if(!Civilization.isStart()){
+            return;
+        }
+        if(event.isCancelled()){
             return;
         }
         ItemStack item = event.getItem();
@@ -146,20 +159,56 @@ public class PlayerHandler implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void attackAndDealt(EntityDamageByEntityEvent event){
         if(!Civilization.isStart()){
+            return;
+        }
+        if(event.isCancelled()){
             return;
         }
         Entity damager = event.getDamager();
         Entity taker = event.getEntity();
         if(damager instanceof Player){
             PlayerCache cache = ConfigManager.getCache(damager.getUniqueId());
-            cache.operateStamina(ConfigManager.StaminaData.attackStamina);
+            ItemStack itemMain = ((Player) damager).getInventory().getItemInMainHand();
+            if(ItemUtil.isExist(itemMain)){
+                if(NMSSupport.isSword(itemMain.getType())){
+                    cache.operateStamina(ConfigManager.StaminaData.attackStamina + cache.getStaminaReduce(AbilityType.Sword, "공격"));
+                }else if(NMSSupport.isAxe(itemMain.getType())){
+                    cache.operateStamina(ConfigManager.StaminaData.attackStamina + cache.getStaminaReduce(AbilityType.Axe, "공격"));
+                }else {
+                    cache.operateStamina(ConfigManager.StaminaData.attackStamina + cache.getStaminaReduce(AbilityType.BareHand, "공격"));
+                }
+            }else{
+                cache.operateStamina(ConfigManager.StaminaData.attackStamina + cache.getStaminaReduce(AbilityType.BareHand, "공격"));
+            }
         }
         if(taker instanceof Player){
             PlayerCache cache = ConfigManager.getCache(taker.getUniqueId());
-            cache.operateStamina(ConfigManager.StaminaData.hitStamina);
+            cache.operateStamina(ConfigManager.StaminaData.hitStamina + cache.getStaminaReduce(AbilityType.Sense, "데미지"));
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onShot(ProjectileLaunchEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        if(event.isCancelled()){
+            return;
+        }
+        ProjectileSource source = event.getEntity().getShooter();
+        if(source instanceof Player){
+            Player shooter = (Player) source;
+            PlayerCache cache = ConfigManager.getCache(shooter.getUniqueId());
+            ItemStack itemMain = shooter.getInventory().getItemInMainHand();
+            ItemStack itemOff = shooter.getInventory().getItemInMainHand();
+            if(ItemUtil.isExist(itemMain) && NMSSupport.isBow(itemMain.getType())){
+                cache.operateStamina(ConfigManager.StaminaData.bowAttackStamina + cache.getStaminaReduce(AbilityType.Bow, "공격"));
+            }else if(ItemUtil.isExist(itemOff) && NMSSupport.isBow(itemOff.getType())){
+                cache.operateStamina(ConfigManager.StaminaData.bowAttackStamina + cache.getStaminaReduce(AbilityType.Bow, "공격"));
+            }
         }
     }
 

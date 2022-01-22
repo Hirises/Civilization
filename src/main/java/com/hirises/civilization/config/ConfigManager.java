@@ -11,6 +11,7 @@ import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataCache;
 import com.hirises.core.data.unit.DirDataCache;
 import com.hirises.core.display.unit.ActionBarUnit;
+import com.hirises.core.display.unit.MessageUnit;
 import com.hirises.core.store.PlayerCacheStore;
 import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
@@ -18,6 +19,7 @@ import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -46,6 +48,10 @@ public class ConfigManager {
     private static ItemStack moneyItem;
     public static ItemStack abilityItem;
     public static ItemStack prefixItem;
+    public static MessageUnit lackLevelMessage;
+
+    public static Map<Material, Map<AbilityType, Integer>> rightClickLimitMap = new HashMap<>();
+    public static Map<EntityType, Map<AbilityType, Integer>> entityRightClickLimitMap = new HashMap<>();
 
     //region data classes
 
@@ -55,6 +61,7 @@ public class ConfigManager {
         public static int swimmingStamina;
         public static int jumpStamina;
         public static int attackStamina;
+        public static int bowAttackStamina;
         public static int hitStamina;
         public static int miningStamina;
         public static int placeStamina;
@@ -75,6 +82,7 @@ public class ConfigManager {
             swimmingStamina = config.get(Integer.class, "스테미나.수영");
             jumpStamina = config.get(Integer.class, "스테미나.점프");
             attackStamina = config.get(Integer.class, "스테미나.공격");
+            bowAttackStamina = config.get(Integer.class, "스테미나.원거리공격");
             hitStamina = config.get(Integer.class, "스테미나.데미지");
             miningStamina = config.get(Integer.class, "스테미나.채광");
             placeStamina = config.get(Integer.class, "스테미나.설치");
@@ -134,10 +142,31 @@ public class ConfigManager {
             String rawUUID = cache.getOrDefault(String.class, "", "칭호." + type.getKey());
             prefixFinisher.put(type, rawUUID.trim().isEmpty() ? null : UUID.fromString(rawUUID));
         }
+        rightClickLimitMap.clear();
+        for(String typeKey : ability.getKeys("제한.우클")){
+            AbilityType type = AbilityType.valueOf(typeKey);
+            for(String matKey : ability.getKeys("제한.우클." + typeKey)){
+                Material mat = Material.valueOf(matKey);
+                rightClickLimitMap.putIfAbsent(mat, new HashMap<>());
+                rightClickLimitMap.get(mat)
+                        .put(type, ability.get(Integer.class, "제한.우클." + typeKey +"." + matKey));
+            }
+        }
+        entityRightClickLimitMap.clear();
+        for(String typeKey : ability.getKeys("제한.엔티티")){
+            AbilityType type = AbilityType.valueOf(typeKey);
+            for(String matKey : ability.getKeys("제한.엔티티." + typeKey)){
+                EntityType entityType = EntityType.valueOf(matKey);
+                entityRightClickLimitMap.putIfAbsent(entityType, new HashMap<>());
+                entityRightClickLimitMap.get(entityType)
+                        .put(type, ability.get(Integer.class, "제한.엔티티." + typeKey +"." + matKey));
+            }
+        }
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();
         abilityItem = ability.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();
         prefixItem = prefix.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();
+        lackLevelMessage = ability.getOrDefault(new MessageUnit(), "메세지");
 
         String uuid = state.get(String.class, "lastHitEnderDragon");
         WorldListener.LastHitEnderDragon = uuid.trim().equalsIgnoreCase("") ? null : UUID.fromString(uuid);

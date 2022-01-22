@@ -13,6 +13,8 @@ public enum AbilityType {
     Sword("칼"),
     Axe("도끼"),
     Bow("원거리"),
+    BareHand("맨손"),
+    Sense("전술"),
     ;
 
     private String name;

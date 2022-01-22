@@ -271,4 +271,18 @@ public final class NMSSupport {
         meta.setPower(3);
         fw.setFireworkMeta(meta);
     }
+
+    public static boolean isSword(Material mat){
+        return mat.equals(Material.DIAMOND_SWORD) || mat.equals(Material.STONE_SWORD) || mat.equals(Material.IRON_SWORD) || mat.equals(Material.GOLDEN_SWORD) ||
+                mat.equals(Material.NETHERITE_SWORD) || mat.equals(Material.WOODEN_SWORD);
+    }
+
+    public static boolean isAxe(Material mat){
+        return mat.equals(Material.DIAMOND_AXE) || mat.equals(Material.STONE_AXE) || mat.equals(Material.IRON_AXE) || mat.equals(Material.GOLDEN_AXE) ||
+                mat.equals(Material.NETHERITE_AXE) || mat.equals(Material.WOODEN_AXE);
+    }
+
+    public static boolean isBow(Material mat){
+        return mat.equals(Material.BOW) || mat.equals(Material.CROSSBOW) || mat.equals(Material.TRIDENT);
+    }
 }

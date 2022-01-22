@@ -2,9 +2,11 @@ package com.hirises.civilization.player;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
+import com.hirises.civilization.data.AbilityInfo;
 import com.hirises.civilization.data.AbilityType;
 import com.hirises.core.display.Display;
 import com.hirises.core.store.IPlayerCache;
+import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -184,5 +186,40 @@ public class PlayerCache implements IPlayerCache {
         if(curLevel < ConfigManager.abilityInfo.get(type.getName()).getMaxLevel()){
             abilityLevelMap.put(type, curLevel + 1);
         }
+    }
+
+    public int getStaminaReduce(AbilityType type, String key){
+        AbilityInfo info = ConfigManager.abilityInfo.get(type.getName());
+        final int level = getAbilityLevel(type);
+        if(level > 3){
+            return info.getProperties(key + ".3") + ( (level - 3) * info.getProperties(key + ".+") );
+        }else if(level > 0){
+            return info.getProperties(key + "." + level);
+        }
+        return 0;
+    }
+
+    public <K> boolean checkAbilityLevel(Map<K, Map<AbilityType, Integer>> map, K key){
+        if(map.containsKey(key)){
+            Map<AbilityType, Integer> checkMap = map.get(key);
+            for(AbilityType type : checkMap.keySet()){
+                if(getAbilityLevel(type) < checkMap.get(type)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public <K> Pair<AbilityType, Integer> getLackAbilityLevel(Map<K, Map<AbilityType, Integer>> map, K key){
+        if(map.containsKey(key)){
+            Map<AbilityType, Integer> checkMap = map.get(key);
+            for(AbilityType type : checkMap.keySet()){
+                if(getAbilityLevel(type) < checkMap.get(type)){
+                    return new Pair<>(type, checkMap.get(type));
+                }
+            }
+        }
+        return new Pair<>(AbilityType.Intelligent, 999);
     }
 }

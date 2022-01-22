@@ -20,31 +20,47 @@ public class CombatAbilityGUI extends AbstractGUI {
             gui.close();
         });
 
-        GUIStateButton mining = new GUIStateButton("칼", "3");
-        bind("3", mining);
-        mining.bindOnStateChange((gui, i, i1) -> {
+        GUIStateButton bareHand = new GUIStateButton("맨손", "1");
+        bind("1", bareHand);
+        bareHand.bindOnStateChange((gui, i, i1) -> {
+            AbilityCategoryGUI.checkLevelUp(AbilityType.BareHand, player);
+            addNewItemSymbol("1", AbilityCategoryGUI.getAbilityItem(AbilityType.BareHand, player));
+        });
+        addNewItemSymbol("1", AbilityCategoryGUI.getAbilityItem(AbilityType.BareHand, player));
+
+        GUIStateButton sword = new GUIStateButton("칼", "3");
+        bind("3", sword);
+        sword.bindOnStateChange((gui, i, i1) -> {
             AbilityCategoryGUI.checkLevelUp(AbilityType.Sword, player);
             addNewItemSymbol("3", AbilityCategoryGUI.getAbilityItem(AbilityType.Sword, player));
         });
         addNewItemSymbol("3", AbilityCategoryGUI.getAbilityItem(AbilityType.Sword, player));
 
 
-        GUIStateButton farming = new GUIStateButton("도끼", "5");
-        bind("5", farming);
-        farming.bindOnStateChange((gui, i, i1) -> {
+        GUIStateButton axe = new GUIStateButton("도끼", "5");
+        bind("5", axe);
+        axe.bindOnStateChange((gui, i, i1) -> {
             AbilityCategoryGUI.checkLevelUp(AbilityType.Axe, player);
             addNewItemSymbol("5", AbilityCategoryGUI.getAbilityItem(AbilityType.Axe, player));
         });
         addNewItemSymbol("5", AbilityCategoryGUI.getAbilityItem(AbilityType.Axe, player));
 
 
-        GUIStateButton fishing = new GUIStateButton("원거리", "7");
-        bind("7", fishing);
-        fishing.bindOnStateChange((gui, i, i1) -> {
+        GUIStateButton bow = new GUIStateButton("원거리", "7");
+        bind("7", bow);
+        bow.bindOnStateChange((gui, i, i1) -> {
             AbilityCategoryGUI.checkLevelUp(AbilityType.Bow, player);
             addNewItemSymbol("7", AbilityCategoryGUI.getAbilityItem(AbilityType.Bow, player));
         });
         addNewItemSymbol("7", AbilityCategoryGUI.getAbilityItem(AbilityType.Bow, player));
+
+        GUIStateButton sense = new GUIStateButton("전술", "9");
+        bind("9", sense);
+        sense.bindOnStateChange((gui, i, i1) -> {
+            AbilityCategoryGUI.checkLevelUp(AbilityType.Sense, player);
+            addNewItemSymbol("9", AbilityCategoryGUI.getAbilityItem(AbilityType.Sense, player));
+        });
+        addNewItemSymbol("9", AbilityCategoryGUI.getAbilityItem(AbilityType.Sense, player));
     }
 
     @Override

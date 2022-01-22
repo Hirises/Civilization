@@ -25,7 +25,7 @@ public class AbilityInfo implements DataUnit {
         this.maxLevel = yml.get(Integer.class, root + ".최대레벨");
         this.cost = yml.get(Integer.class, root + ".코스트");
         this.properties = new HashMap<>();
-        for(String key : yml.getKeys(root + ".설정")){
+        for(String key : yml.getKeys(root + ".설정", true)){
             this.properties.put(key, yml.get(Integer.class, root + ".설정." + key));
         }
     }
