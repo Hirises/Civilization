@@ -12,7 +12,41 @@
   가중치: 30
   메세지: '&c{type} 숙련도 {level}레벨 이상이 필요합니다'
 제한:
+  설치:
+    Farm:
+      POTATO: 1
+      CARROT: 2
+      WHEAT_SEEDS: 3
+      WHEAT: 3
+      WARPED_FUNGUS: 4
+      CRIMSON_FUNGUS: 4
+      RED_MUSHROOM: 4
+      BROWN_MUSHROOM: 4
+      OAK_SAPLING: 4
+      BIRCH_SAPLING: 4
+      ACACIA_SAPLING: 4
+      SPRUCE_SAPLING: 4
+      JUNGLE_SAPLING: 4
+      DARK_OAK_SAPLING: 4
+      KELP: 5
+      BAMBOO: 5
+      SUGAR_CANE: 5
+      COCOA_BEANS: 5
+      GLOW_BERRIES: 5
+      SWEET_BERRIES: 5
+      BEETROOT_SEEDS: 5
+      PUMPKIN_SEEDS: 6
+      MELON_SEEDS: 6
+      NETHER_WART: 7
   우클:
+    Cultivate:
+      BEE_NEST: 5
+      BEEHIVE: 5
+    Farm:
+      BEE_NEST: 5
+      BEEHIVE: 5
+    Potion:
+      BREWING_STAND: 1
     Intelligent:
       ENDER_CHEST: 3
       GRINDSTONE: 3
@@ -24,9 +58,9 @@
       DAMAGED_ANVIL: 7
   엔티티:
     Cultivate:
+      PIG: 1
+      SHEEP: 2
       CHICKEN: 3
-      PIG: 3
-      SHEEP: 3
       COW: 4
       TURTLE: 4
       FOX: 4
@@ -34,8 +68,8 @@
       PANDA: 4
       PARROT: 4
       RABBIT: 4
+      OCELOT: 4
       BEE: 5
-      OCELOT: 5
       MUSHROOM_COW: 5
       LLAMA: 6
       SKELETON_HORSE: 6
@@ -110,7 +144,7 @@
   농사:
     타입: 'Farm'
     획득법: '작물 수확'
-    효과: '기를 수 있는 작물 추가 (미구현)'
+    효과: '기를 수 있는 작물 추가'
     코드: 'WHEAT'
     최대레벨: 10
     코스트: 1
@@ -124,7 +158,7 @@
   지능:
     타입: 'Intelligent'
     획득법: '인첸트, 모루 사용'
-    효과: '인첸트, 모루 사용 가능 (미구현)'
+    효과: '인첸트, 모루 사용 가능'
     코드: 'BOOK'
     최대레벨: 10
     코스트: 2

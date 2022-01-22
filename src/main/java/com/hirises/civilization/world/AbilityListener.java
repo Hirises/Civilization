@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.spigotmc.event.entity.EntityMountEvent;
@@ -36,6 +37,21 @@ public class AbilityListener implements Listener {
                 Display.sendDisplayUnit(player, ConfigManager.lackLevelMessage,
                         Util.toRemap("type", reason.getLeft().getName(), "level", String.valueOf(reason.getRight())));
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlace(BlockPlaceEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Player player = event.getPlayer();
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        if(!cache.checkAbilityLevel(ConfigManager.placeLimitMap, event.getItemInHand().getType())){
+            event.setCancelled(true);
+            Pair<AbilityType, Integer> reason = cache.getLackAbilityLevel(ConfigManager.placeLimitMap, event.getItemInHand().getType());
+            Display.sendDisplayUnit(player, ConfigManager.lackLevelMessage,
+                    Util.toRemap("type", reason.getLeft().getName(), "level", String.valueOf(reason.getRight())));
         }
     }
 
