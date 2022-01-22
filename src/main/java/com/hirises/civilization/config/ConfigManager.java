@@ -53,6 +53,7 @@ public class ConfigManager {
     public static Map<Material, Map<AbilityType, Integer>> rightClickLimitMap = new HashMap<>();
     public static Map<EntityType, Map<AbilityType, Integer>> entityRightClickLimitMap = new HashMap<>();
     public static Map<Material, Map<AbilityType, Integer>> placeLimitMap = new HashMap<>();
+    public static Map<Material, Map<AbilityType, Integer>> craftLimitMap = new HashMap<>();
 
     //region data classes
 
@@ -171,6 +172,16 @@ public class ConfigManager {
                 placeLimitMap.putIfAbsent(mat, new HashMap<>());
                 placeLimitMap.get(mat)
                         .put(type, ability.get(Integer.class, "제한.설치." + typeKey +"." + matKey));
+            }
+        }
+        craftLimitMap.clear();
+        for(String typeKey : ability.getKeys("제한.제작")){
+            AbilityType type = AbilityType.valueOf(typeKey);
+            for(String matKey : ability.getKeys("제한.제작." + typeKey)){
+                Material mat = Material.valueOf(matKey);
+                craftLimitMap.putIfAbsent(mat, new HashMap<>());
+                craftLimitMap.get(mat)
+                        .put(type, ability.get(Integer.class, "제한.제작." + typeKey +"." + matKey));
             }
         }
 

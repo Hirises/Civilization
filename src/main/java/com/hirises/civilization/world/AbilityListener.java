@@ -19,10 +19,26 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.spigotmc.event.entity.EntityMountEvent;
 
 public class AbilityListener implements Listener {
+    @EventHandler
+    public void onCraft(CraftItemEvent event){
+        if(!Civilization.isStart()){
+            return;
+        }
+        Player player = (Player) event.getWhoClicked();
+        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        if(!cache.checkAbilityLevel(ConfigManager.craftLimitMap, event.getRecipe().getResult().getType())){
+            event.setCancelled(true);
+            Pair<AbilityType, Integer> reason = cache.getLackAbilityLevel(ConfigManager.craftLimitMap, event.getRecipe().getResult().getType());
+            Display.sendDisplayUnit(player, ConfigManager.lackLevelMessage,
+                    Util.toRemap("type", reason.getLeft().getName(), "level", String.valueOf(reason.getRight())));
+        }
+    }
+
     @EventHandler
     public void onClick(PlayerInteractEvent event){
         if(!Civilization.isStart()){

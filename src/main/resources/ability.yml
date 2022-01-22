@@ -12,6 +12,29 @@
   가중치: 30
   메세지: '&c{type} 숙련도 {level}레벨 이상이 필요합니다'
 제한:
+  제작:
+    Craft:
+      IRON_HELMET: 3
+      IRON_CHESTPLATE: 3
+      IRON_LEGGINGS: 3
+      IRON_BOOTS: 3
+      IRON_SHOVEL: 3
+      IRON_PICKAXE: 3
+      IRON_AXE: 3
+      IRON_HOE: 3
+      IRON_SWORD: 3
+
+      DIAMOND_HELMET: 4
+      DIAMOND_CHESTPLATE: 4
+      DIAMOND_LEGGINGS: 4
+      DIAMOND_BOOTS: 4
+      DIAMOND_SWORD: 4
+      DIAMOND_SHOVEL: 4
+      DIAMOND_HOE: 4
+      DIAMOND_AXE: 4
+      DIAMOND_PICKAXE: 4
+
+      NETHERITE_INGOT: 5
   설치:
     Farm:
       POTATO: 1
@@ -123,7 +146,7 @@
   공예:
     타입: 'Craft'
     획득법: '아이템 제작'
-    효과: '제작할 수 있는 아이템 추가 (미구현)'
+    효과: '제작할 수 있는 아이템 추가'
     코드: 'CRAFTING_TABLE'
     최대레벨: 10
     코스트: 1

@@ -10,10 +10,13 @@ import com.hirises.core.inventory.GUIFlags;
 import com.hirises.core.inventory.ui.GUIContainer;
 import com.hirises.core.inventory.ui.GUIStateButton;
 import com.hirises.core.util.ItemUtil;
+import com.hirises.core.util.Util;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,6 +24,7 @@ import java.util.ArrayList;
 
 public class FreeShopCostGUI extends AbstractGUI {
     private ItemStack target;
+    private int level;
 
     public FreeShopCostGUI(ItemStack target) {
         super(new Flags<>(GUIFlags.PREVENT_TOP_INVENTORY_MODIFY), ConfigManager.menu.get("자유시장_가격설정"));
@@ -66,10 +70,17 @@ public class FreeShopCostGUI extends AbstractGUI {
     }
 
     @Override
+    protected void onOpen(GUIEventResult result) {
+        level = player.getLevel();
+        player.setLevel(1);
+    }
+
+    @Override
     protected void onClose(GUIEventResult result) {
         AnvilInventory anvil = (AnvilInventory) inventory;
         anvil.setFirstItem(new ItemStack(Material.AIR));
         anvil.setSecondItem(new ItemStack(Material.AIR));
+        player.setLevel(level);
     }
 
     @Override
