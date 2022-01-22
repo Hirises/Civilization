@@ -34,15 +34,10 @@ public class RecipeInfo implements DataUnit {
     public void load(YamlStore yml, String root) {
         String rawString = yml.get(String.class, root + ".모양");
         recipe = rawString.replace(" ", "").replace(".", " ").split("\n");
-        Util.logging(recipe);
         for(String key : yml.getKeys(root + ".심볼")){
             itemMap.put(key, yml.getOrDefault(new ItemStackUnit(), root + ".심볼." + key).getItem());
         }
-        Util.logging(itemMap);
         result = yml.getOrDefault(new ItemStackUnit(), root + ".결과").getItem();
-        Util.logging(result);
-        NBTTagStore.set(result, "Adf", "Adsf");
-        Util.logging(result);
         recipeType = Type.valueOf(yml.get(String.class, root + ".타입"));
         key = yml.get(String.class, root + ".키");
     }
