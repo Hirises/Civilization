@@ -11,7 +11,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -25,6 +27,16 @@ import java.util.UUID;
 public class WorldListener implements Listener {
 
     public static UUID LastHitEnderDragon;
+
+    @EventHandler
+    public void preventBedExplode(BlockExplodeEvent event){
+        if(!Civilization.isRunning()){
+            return;
+        }
+        if(event.getBlock().getWorld().equals(Civilization.world_end.get())){
+            event.setCancelled(true);
+        }
+    }
 
     @EventHandler
     public void onEnderDragonKilled(EntityDeathEvent event){
@@ -90,7 +102,7 @@ public class WorldListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void disablePortal(PlayerInteractEvent event){
         if(!Civilization.isStart()){
             return;

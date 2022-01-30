@@ -17,6 +17,7 @@ import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -198,6 +199,7 @@ public class ConfigManager {
 
         DataCache<RecipeInfo> recipes = new DataCache<>(craft, "", RecipeInfo::new);
         recipes.load();
+        Bukkit.resetRecipes();
         recipes.getSafeDataUnitMap().values().forEach(value -> value.register());
 
         moneyItem = config.getOrDefault(new ItemStackUnit(), "돈").getItem();

@@ -97,6 +97,7 @@ public final class Civilization extends JavaPlugin{
         Bukkit.getPluginManager().registerEvents(new PrefixListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new AbilityListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new StructureListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new ItemListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerHandler(), plugin);
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
