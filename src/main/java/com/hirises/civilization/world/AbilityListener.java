@@ -32,7 +32,7 @@ public class AbilityListener implements Listener {
             return;
         }
         Player player = (Player) event.getWhoClicked();
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        PlayerCache cache = ConfigManager.getCache(player);
         ItemStack item = event.getRecipe().getResult();
         if(NBTTagStore.containKey(item, Keys.CustomItem.toString())
                 && !cache.checkAbilityLevel(ConfigManager.magicCraftLimitMap, NBTTagStore.get(item, Keys.CustomItem.toString(), String.class))) {
@@ -56,7 +56,7 @@ public class AbilityListener implements Listener {
         }
         if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
             Player player = event.getPlayer();
-            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            PlayerCache cache = ConfigManager.getCache(player);
             if(!cache.checkAbilityLevel(ConfigManager.rightClickLimitMap, event.getClickedBlock().getType())){
                 event.setCancelled(true);
                 Pair<AbilityType, Integer> reason = cache.getLackAbilityLevel(ConfigManager.rightClickLimitMap, event.getClickedBlock().getType());
@@ -72,7 +72,7 @@ public class AbilityListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        PlayerCache cache = ConfigManager.getCache(player);
         if(!cache.checkAbilityLevel(ConfigManager.placeLimitMap, event.getItemInHand().getType())){
             event.setCancelled(true);
             Pair<AbilityType, Integer> reason = cache.getLackAbilityLevel(ConfigManager.placeLimitMap, event.getItemInHand().getType());
@@ -88,7 +88,7 @@ public class AbilityListener implements Listener {
         }
         if(event.getBreeder() instanceof Player){
             Player player = (Player) event.getBreeder();
-            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            PlayerCache cache = ConfigManager.getCache(player);
             final Entity entity = event.getEntity();
             if(!cache.checkAbilityLevel(ConfigManager.entityRightClickLimitMap, entity.getType())){
                 event.setCancelled(true);
@@ -116,7 +116,7 @@ public class AbilityListener implements Listener {
         }
         if(event.getEntity() instanceof Player){
             Player player = (Player) event.getEntity();
-            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            PlayerCache cache = ConfigManager.getCache(player);
             final Entity entity = event.getMount();
             if(!cache.checkAbilityLevel(ConfigManager.entityRightClickLimitMap, entity.getType())){
                 event.setCancelled(true);

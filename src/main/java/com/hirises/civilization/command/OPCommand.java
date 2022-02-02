@@ -2,7 +2,6 @@ package com.hirises.civilization.command;
 
 import com.hirises.civilization.Civilization;
 import com.hirises.civilization.config.ConfigManager;
-import com.hirises.civilization.world.NMSSupport;
 import com.hirises.core.util.Util;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -10,7 +9,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +38,11 @@ public class OPCommand implements CommandExecutor, TabCompleter {
                 Bukkit.getScheduler().runTaskLater(Civilization.getInst(), () -> {
                     commandMap.remove(sender);
                 }, 200);
-                sender.sendMessage(ChatColor.RED + "정말 게임을 시작하시겠습니까? 진행사항이 초기화됩니다." + ChatColor.GRAY + " (/civilization confirm)");
+                if(Civilization.isStart()){
+                    sender.sendMessage(ChatColor.RED + "정말 게임을 시작하시겠습니까? 진행사항이 초기화됩니다." + ChatColor.GRAY + " (/civilization confirm)");
+                }else {
+                    sender.sendMessage(ChatColor.RED + "정말 게임을 시작하시겠습니까?" + ChatColor.GRAY + " (/civilization confirm)");
+                }
                 break;
             }
             case "reset": {
@@ -68,7 +70,7 @@ public class OPCommand implements CommandExecutor, TabCompleter {
             }
             case "reload": {
                 Util.broadcast(new TextComponent(ChatColor.RED + "리로드를 시작합니다"));
-                ConfigManager.init();
+                ConfigManager.load();
                 Util.broadcast(new TextComponent(ChatColor.GREEN + "완료!"));
                 break;
             }

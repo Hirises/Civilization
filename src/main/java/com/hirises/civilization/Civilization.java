@@ -75,7 +75,7 @@ public final class Civilization extends JavaPlugin{
                 world_end = new CivilizationWorld(Bukkit.createWorld(creator_theEnd.type(WorldType.NORMAL).environment(World.Environment.THE_END)));
             }
 
-            ConfigManager.init();
+            ConfigManager.load();
         }catch (Exception e){
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "---------------------   경고!   ---------------------");
             Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "플러그인을 로드하는 도중 오류가 발생하였습니다.");
@@ -85,6 +85,7 @@ public final class Civilization extends JavaPlugin{
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "--------------------------------------------------");
             e.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(plugin);
+            return;
         }
 
         worldBorderRadius = ConfigManager.config.get(Integer.class, "월드지름") / 2;
@@ -113,7 +114,7 @@ public final class Civilization extends JavaPlugin{
                 return;
             }
             for(Player player : Bukkit.getOnlinePlayers()){
-                PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+                PlayerCache cache = ConfigManager.getCache(player);
                 cache.operateStamina((ConfigManager.StaminaData.healStamina  + cache.getStaminaReduce(AbilityType.Sense, "회복")) / 4);
                 if(!player.isSprinting() && !player.isJumping() && player.isSneaking()){
                     cache.operateStamina((ConfigManager.StaminaData.additionalHealStamina  + cache.getStaminaReduce(AbilityType.Sense, "웅크리기")) / 4);
@@ -401,7 +402,7 @@ public final class Civilization extends JavaPlugin{
             player.teleport(spawn);
         }
         player.setBedSpawnLocation(spawn, true);
-        ConfigManager.getCache(player.getUniqueId()).setSpawn(spawn);
+        ConfigManager.getCache(player).setSpawn(spawn);
 
         return spawn;
     }

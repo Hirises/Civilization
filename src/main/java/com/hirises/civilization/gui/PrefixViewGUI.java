@@ -53,7 +53,8 @@ public class PrefixViewGUI extends AbstractGUI {
         ItemStack item = ConfigManager.prefixItem.clone();
         PrefixInfo info = ConfigManager.prefixInfoMap.get(type);
         item.setType(info.getMaterial());
-        ItemUtil.remapString(item, Util.toRemap("name", info.getName(), "howToGet", info.getTrigger(), "effect", info.getEffect()));
+        ItemUtil.remapString(item, Util.toRemap("name", info.getName(), "howToGet", info.getTrigger(), "effect", info.getEffect()
+        , "exp", String.valueOf(info.getExp())));
         return item;
     }
 }

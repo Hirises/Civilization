@@ -43,7 +43,7 @@ public class Structure implements DataUnit {
         this.minY = miny;
         this.minZ = minZ;
         this.maxX = maxX;
-        this.minY = maxY;
+        this.maxY = maxY;
         this.maxZ = maxZ;
         this.info = structureInfo;
         this.placed = placed;

@@ -46,7 +46,7 @@ public class PlayerHandler implements Listener {
     }
 
     public static void updateScoreBoard(Player player){
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        PlayerCache cache = ConfigManager.getCache(player);
         Objective board = ScoreBoardHandler.getOrNew(player);
         ScoreBoardHandler.setLine(board, 0, "돈: " + cache.getMoney());
         ScoreBoardHandler.show(player, board);
@@ -92,11 +92,11 @@ public class PlayerHandler implements Listener {
         }
         Player player = event.getPlayer();
         if(player.isInWater() || player.isInLava()){
-            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            PlayerCache cache = ConfigManager.getCache(player);
             cache.operateStamina(ConfigManager.StaminaData.swimmingStamina + cache.getStaminaReduce(AbilityType.Move, "수영"));
         }
         if(player.isSprinting()){
-            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            PlayerCache cache = ConfigManager.getCache(player);
             cache.operateStamina(ConfigManager.StaminaData.runStamina + cache.getStaminaReduce(AbilityType.Move, "달리기"));
         }
     }
@@ -107,7 +107,7 @@ public class PlayerHandler implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        PlayerCache cache = ConfigManager.getCache(player);
         cache.operateStamina(ConfigManager.StaminaData.jumpStamina + cache.getStaminaReduce(AbilityType.Move, "점프"));
     }
 
@@ -120,7 +120,7 @@ public class PlayerHandler implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        PlayerCache cache = ConfigManager.getCache(player);
         cache.operateStamina(ConfigManager.StaminaData.miningStamina + cache.getStaminaReduce(AbilityType.Mine, "채광"));
     }
 
@@ -133,7 +133,7 @@ public class PlayerHandler implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        PlayerCache cache = ConfigManager.getCache(player);
         cache.operateStamina(ConfigManager.StaminaData.placeStamina + cache.getStaminaReduce(AbilityType.Mine, "설치"));
     }
 
@@ -150,11 +150,11 @@ public class PlayerHandler implements Listener {
 
         if (ItemUtil.isExist(item)) {
             if(NBTTagStore.containKey(item, Keys.StaminaHeal.toString())) {
-                ConfigManager.getCache(player.getUniqueId()).operateStamina(NBTTagStore.get(item, Keys.StaminaHeal.toString(), Integer.class));
+                ConfigManager.getCache(player).operateStamina(NBTTagStore.get(item, Keys.StaminaHeal.toString(), Integer.class));
             }else if (ConfigManager.StaminaData.staminaHealMap.containsKey(item.getType())) {
-                ConfigManager.getCache(player.getUniqueId()).operateStamina(ConfigManager.StaminaData.staminaHealMap.get(item.getType()));
+                ConfigManager.getCache(player).operateStamina(ConfigManager.StaminaData.staminaHealMap.get(item.getType()));
             }else if (item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
-                ConfigManager.getCache(player.getUniqueId()).operateStamina(ConfigManager.StaminaData.drinkingStamina);
+                ConfigManager.getCache(player).operateStamina(ConfigManager.StaminaData.drinkingStamina);
             }
         }
     }
@@ -221,7 +221,7 @@ public class PlayerHandler implements Listener {
             Player player = event.getPlayer();
             ItemStack item = player.getInventory().getItemInMainHand();
             if(ItemUtil.isExist(item) && NBTTagStore.containKey(item, Keys.MoneyItem.toString())){
-                ConfigManager.getCache(player.getUniqueId()).operateMoney(NBTTagStore.get(item, Keys.MoneyItem.toString(), Long.class));
+                ConfigManager.getCache(player).operateMoney(NBTTagStore.get(item, Keys.MoneyItem.toString(), Long.class));
                 player.getInventory().setItemInMainHand(ItemUtil.operateAmount(item, -1));
             }
         }
@@ -245,7 +245,7 @@ public class PlayerHandler implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+        PlayerCache cache = ConfigManager.getCache(player);
         World world = player.getWorld();
         Location location = player.getLocation();
         ItemStack[] content = player.getInventory().getContents();
@@ -298,7 +298,7 @@ public class PlayerHandler implements Listener {
         Player player = event.getPlayer();
         Location spawn = player.getBedSpawnLocation();
         if(spawn == null){
-            PlayerCache cache = ConfigManager.getCache(player.getUniqueId());
+            PlayerCache cache = ConfigManager.getCache(player);
             spawn = cache.getSpawn();
             spawn.getBlock().setType(Material.AIR);
             spawn.clone().add(0, 1, 0).getBlock().setType(Material.AIR);

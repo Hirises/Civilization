@@ -5,11 +5,13 @@ import com.hirises.civilization.data.*;
 import com.hirises.civilization.player.PlayerCache;
 import com.hirises.civilization.world.NMSSupport;
 import com.hirises.civilization.world.WorldListener;
+import com.hirises.core.data.AlertUnit;
 import com.hirises.core.data.GUIShapeUnit;
 import com.hirises.core.data.ItemStackUnit;
 import com.hirises.core.data.LootTableUnit;
 import com.hirises.core.data.unit.DataCache;
 import com.hirises.core.data.unit.DirDataCache;
+import com.hirises.core.display.Display;
 import com.hirises.core.display.unit.ActionBarUnit;
 import com.hirises.core.display.unit.MessageUnit;
 import com.hirises.core.store.PlayerCacheStore;
@@ -17,12 +19,13 @@ import com.hirises.core.store.YamlStore;
 import com.hirises.core.util.ItemUtil;
 import com.hirises.core.util.Pair;
 import com.hirises.core.util.Util;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.PluginManager;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,35 +34,40 @@ public class ConfigManager {
     public static YamlStore prefix = new YamlStore(Civilization.getInst(), "prefix.yml");
     public static YamlStore ability = new YamlStore(Civilization.getInst(), "ability.yml");
     public static YamlStore craft = new YamlStore(Civilization.getInst(), "craft.yml");
-    public static int killRange;
-    public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
-    public static DataCache<AbilityInfo> abilityInfo = new DataCache<>(ability, "숙련도", AbilityInfo::new);
-    public static DataCache<StructureInfo> structureData = new DataCache<>(config, "구조물", StructureInfo::new);
-    public static PlayerCacheStore<PlayerCache> cacheStore;
-
     public static YamlStore cache = new YamlStore(Civilization.getInst(), "Saves/cache.yml");
     public static YamlStore data = new YamlStore(Civilization.getInst(), "Saves/data.yml");
     public static YamlStore state = new YamlStore(Civilization.getInst(), "Saves/state.yml");
+
+    public static DataCache<GUIShapeUnit> menu = new DataCache<>(new YamlStore(Civilization.getInst(), "menu.yml"), "", GUIShapeUnit::new);
+    public static DataCache<AbilityInfo> abilityInfo = new DataCache<>(ability, "숙련도", AbilityInfo::new);
+    public static DataCache<StructureInfo> structureData = new DataCache<>(config, "구조물", StructureInfo::new);
     public static DirDataCache<LootTableUnit> lootTable = new DirDataCache(Civilization.getInst(), "Schematics", LootTableUnit::new);
-    public static List<FreeShopItemUnit> shopItem = new ArrayList<>();
-    public static final Map<ChunkData, Structure> structureList = new HashMap<>();
-    public static Map<PrefixType, PrefixInfo> prefixInfoMap = new HashMap<>();
-    private static final Map<PrefixType, UUID> prefixFinisher = new HashMap<>();
+    public static PlayerCacheStore<PlayerCache> cacheStore;
 
-    public static List<UUID> allUser = new ArrayList<>();
-    private static ItemStack moneyItem;
-    public static ItemStack abilityItem;
-    public static ItemStack prefixItem;
-    public static MessageUnit lackLevelMessage;
+    public static List<FreeShopItemUnit> shopItem = new ArrayList<>();  //자유시장 아이템
+    public static final Map<ChunkData, Structure> structureList = new HashMap<>();  //설치된 구조물 리스트
+    public static Map<PrefixType, PrefixInfo> prefixInfoMap = new HashMap<>();  //칭호 상태 맵
+    private static final Map<PrefixType, UUID> prefixFinisher = new HashMap<>();    //칭호 획득한 사람
+    public static List<UUID> allUser = new ArrayList<>();   //접속했었던 모든 플레이어 리스트
 
+    //숙련도별 제한 맵
     public static Map<Material, Map<AbilityType, Integer>> rightClickLimitMap = new HashMap<>();
     public static Map<EntityType, Map<AbilityType, Integer>> entityRightClickLimitMap = new HashMap<>();
     public static Map<Material, Map<AbilityType, Integer>> placeLimitMap = new HashMap<>();
     public static Map<Material, Map<AbilityType, Integer>> craftLimitMap = new HashMap<>();
     public static Map<String, Map<AbilityType, Integer>> magicCraftLimitMap = new HashMap<>();
 
+    //기타 읽어올 자료들
+    private static ItemStack moneyItem;
+    public static ItemStack abilityItem;
+    public static ItemStack prefixItem;
+    public static MessageUnit lackLevelMessage;
+    public static AlertUnit prefixGainMessage;
+    public static int killRange;
+
     //region data classes
 
+    //스테미나 관련된 상수들 (너무 많아서 한곳에 모아둠)
     public class StaminaData {
         public static int defaultStamina;
         public static int runStamina;
@@ -108,7 +116,23 @@ public class ConfigManager {
 
     //endregion
 
-    public static void init(){
+    /**
+     * 모든 정보를 읽어옵니다.
+     * 기존 정보를 모두 덮어씌웁니다
+     */
+    public static void load(){
+        File file = Civilization.getInst().getDataFolder().toPath().resolve("Schematics").toFile();
+        if(!file.isDirectory() || !file.exists()){
+            file.mkdirs();
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "---------------------   경고!   ---------------------");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "플러그인을 로드하는 도중 오류가 발생하였습니다.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.DARK_RED + "서버 폴더의 plugins/Civilization/Schematics 폴더에 " +
+                            "구조물 파일을 추가해주세요");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "--------------------------------------------------");
+            Bukkit.getPluginManager().disablePlugin(Civilization.getInst());
+            return;
+        }
+
         state.load(true);
         config.load(true);
         cache.load(true);
@@ -206,6 +230,7 @@ public class ConfigManager {
         abilityItem = ability.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();
         prefixItem = prefix.getOrDefault(new ItemStackUnit(), "기본아이템").getItem();
         lackLevelMessage = ability.getOrDefault(new MessageUnit(), "메세지");
+        prefixGainMessage = config.getOrDefault(new AlertUnit(), "칭호획득");
 
         String uuid = state.get(String.class, "lastHitEnderDragon");
         WorldListener.LastHitEnderDragon = uuid.trim().equalsIgnoreCase("") ? null : UUID.fromString(uuid);
@@ -216,6 +241,9 @@ public class ConfigManager {
         StaminaData.load();
     }
 
+    /**
+     * 현재 정보를 저장합니다.
+     */
     public static void save(){
         saveShopItem();
         cacheStore.saveAll();
@@ -227,16 +255,31 @@ public class ConfigManager {
         savePrefix();
     }
 
+    /**
+     * 해당 위치에 구조물 정보를 추가합니다.
+     * @param info 추가할 구조물 정보
+     * @param loc1 최소 위치
+     * @param loc2 최대 위치
+     * @param placed 현재 초기화 되어있는지 여부 (설치 되어있는지 여부)
+     * @return 추가한 구조물
+     */
     public static Structure addStructure(StructureInfo info, Location loc1, Location loc2, boolean placed){
         Structure structure = new Structure(info, loc1, loc2, placed);
         addStructure(structure);
         return structure;
     }
 
+    /**
+     * 해당 구조물 정보를 추가합니다.
+     * @param structure 추가할 구조물
+     * @return 추가된 구조물
+     */
     public static Structure addStructure(Structure structure){
+        //최대, 최소위치 계산
         Pair<Integer, Integer> minChunkPos = NMSSupport.toChunk(structure.getMinX(), structure.getMinZ());
         Pair<Integer, Integer> maxChunkPos = NMSSupport.toChunk(structure.getMaxX(), structure.getMaxZ());
 
+        //청크별로 돌면서 추가
         for(int x = minChunkPos.getLeft(); x <= maxChunkPos.getLeft(); x++){
             for(int z = minChunkPos.getRight(); z <= maxChunkPos.getRight(); z++){
                 structureList.put(new ChunkData(structure.getStructureInfo().getWorldName(), x, z), structure);
@@ -248,6 +291,10 @@ public class ConfigManager {
 
     public static PlayerCache getCache(UUID uuid){
         return cacheStore.get(uuid);
+    }
+
+    public static PlayerCache getCache(Player player){
+        return getCache(player.getUniqueId());
     }
 
     public static ItemStack getMoneyItem(long amount){
@@ -297,6 +344,17 @@ public class ConfigManager {
 
     public static void givePrefix(PrefixType type, UUID uuid){
         prefixFinisher.put(type, uuid);
+        Player target = Bukkit.getPlayer(uuid);
+        PrefixInfo info = prefixInfoMap.get(type);
+        if(target != null){
+            target.giveExp(info.getExp());
+        }
+
+        String name = Bukkit.getOfflinePlayer(uuid).getName();
+        String prefix = info.getName();
+        for(Player player : Bukkit.getOnlinePlayers()){
+            prefixGainMessage.play(player, Util.toRemap("name", name, "prefix", prefix));
+        }
     }
 
     public static void resetPrefix(){
